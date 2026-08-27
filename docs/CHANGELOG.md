@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [0.1.1] - 08-27-2026
+### Added:
+- Ensure that TCL files are carried, with MANIFEST.in file.
+
+---
+
 ## [0.1.0] - 08-27-2026
 ### Added:
 - Scaffolded with maxson-build-utils
