@@ -138,9 +138,7 @@ class GuiApp:
     def _show_about(self) -> None:
         messagebox.showinfo(
             "About",
-            f"{APP_NAME}
-
-Version {__version__}",
+            f"{APP_NAME} Version {__version__}",
         )
 
 
@@ -166,7 +164,7 @@ def apply_windows_taskbar_icon() -> None:
         )
 
 
-def start_gui() -> None:
+def start_gui(time_auto_close = None) -> None:
     """Start the graphical application."""
 
     apply_windows_taskbar_icon()

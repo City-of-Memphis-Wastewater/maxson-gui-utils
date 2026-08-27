@@ -7,11 +7,11 @@ PACKAGE_DIR = Path(__file__).resolve().parent
 SRC_DIR = PACKAGE_DIR.parent
 PROJECT_ROOT = SRC_DIR.parent
 
-APP_NAME = maxson-gui-utils
-APP_NAME_PRETTY = Maxson Gui Utils
-IMPORT_NAME = maxson_gui_utils
-SRC_FOLDER_NAME = maxson_gui_utils
-DESCRIPTION_STR = A Python application.
+APP_NAME = "maxson-gui-utils"
+APP_NAME_PRETTY = "Maxson Gui Utils"
+IMPORT_NAME = "maxson_gui_utils"
+SRC_FOLDER_NAME = "maxson_gui_utils"
+DESCRIPTION_STR = "A Python application."
 APP_DIR = Path.home() / ".maxson-gui-utils"
-LOG_FILE_PATH = /home/oolong/.maxson-gui-utils/maxson-gui-utils.log
+LOG_FILE_PATH = "/home/oolong/.maxson-gui-utils/maxson-gui-utils.log"
 SERVICE = APP_NAME
