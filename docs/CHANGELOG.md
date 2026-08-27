@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [0.1.2] - 08-27-2026
+### Fixed:
+- In publish.yml, improve CLI help test by adding "uv run"
+
+---
+
 ## [0.1.1] - 08-27-2026
 ### Added:
 - Ensure that TCL files are carried, with MANIFEST.in file.
