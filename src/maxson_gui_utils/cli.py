@@ -151,7 +151,7 @@ def placeholder(
 
 @app.command(name="conweb")
 def _launch_configured_website(
-    path: Path | None = typer.Option(None, "--path", help="Path to config file, a la dworshak-config."),
+    path: Path | None = typer.Option(None, "--path", ,"-p", help="Path to config file, a la dworshak-config."),
     service: str | None = typer.Option(
         None,
         "--service",
