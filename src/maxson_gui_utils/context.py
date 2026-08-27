@@ -15,3 +15,6 @@ DESCRIPTION_STR = "A Python application."
 APP_DIR = Path.home() / ".maxson-gui-utils"
 LOG_FILE_PATH = APP_DIR / "maxson-gui-utils.log"
 SERVICE = APP_NAME
+CONFIG_PATH = APP_DIR / "config.json"
+SECRET_PATH = APP_DIR / "vault.db"
+ENV_PATH = PROJECT_ROOT / ".env"
