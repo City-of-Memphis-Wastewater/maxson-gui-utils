@@ -89,6 +89,8 @@ version = { file = "src/maxson_gui_utils/VERSION" }
     "data/*",
     "data/icons/*",
     "data/icons/**/*",
+    "data/themes/*",
+    "data/themes/**/*",
 ]
 
 [tool.maxson-build-utils.names]
