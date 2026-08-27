@@ -2,9 +2,10 @@
 from __future__ import annotations
 import webbrowser
 import logging
+from pathlib import Path
+from dworshak_config import DworshakConfig
 
-from .context import SERVICE
-from .config import get_config_mngr
+from .context import SERVICE, CONFIG_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -18,15 +19,15 @@ Redesign goals:
 
 """
 
-def launch_configured_website(config_mngr=None,service:str|None=None,item:str|None=None)->str:
+def launch_configured_website(path:Path|str|None=None,service:str|None=None,item:str|None=None)->str:
     if service is None:
         service = SERVICE
     if item is None:
         item = ITEM_WEB_REF_0
-    if config_mngr is none:
-        config_mngr = get_config_mngr()
+    if path is None:
+        path = CONFIG_PATH
 
-    config_mngr.set(service=SERVICE,item=item,value="",overwrite=False) # creates file and defauly value if it doesn't exist
+    config_mngr = DworshakConfig(path = path)
     url = config_mngr.get(service=SERVICE,item=item) # allows retrieval of edited value
 
     # If the user left it blank, or it's purely whitespace, use the default path

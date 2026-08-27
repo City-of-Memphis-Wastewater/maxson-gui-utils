@@ -151,9 +151,22 @@ def placeholder(
 
 @app.command(name="conweb")
 def _launch_configured_website(
+    path: Path | None = typer.Option(None, "--path", help="Path to config file, a la dworshak-config."),
+    service: str | None = typer.Option(
+        None,
+        "--service",
+        "-s",
+        help="Service name, the first of two keys",
+    ),
+    item: str | None = typer.Option(
+        None,
+        "--item",
+        "-i",
+        help="Item name, the second of two keys",
+    ),
 ):
     """Launch website set in config file."""
-    url = launch_configured_website()
+    url = launch_configured_website(path=path,service=service,item=item)
     console_stderr.print(f"{url=}")
 
 
