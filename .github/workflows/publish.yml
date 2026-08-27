@@ -42,7 +42,7 @@ jobs:
       - name: Sanity check the built wheel
         run: |
           uv pip uninstall -y maxson-gui-utils || true
-          uv pip install dist/maxson-gui-utils*.whl
+          uv pip install dist/maxson_gui_utils*.whl
           maxson-gui-utils --help
 
       - name: Publish package distributions to PyPI
