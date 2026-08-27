@@ -13,5 +13,5 @@ IMPORT_NAME = "maxson_gui_utils"
 SRC_FOLDER_NAME = "maxson_gui_utils"
 DESCRIPTION_STR = "A Python application."
 APP_DIR = Path.home() / ".maxson-gui-utils"
-LOG_FILE_PATH = "/home/oolong/.maxson-gui-utils/maxson-gui-utils.log"
+LOG_FILE_PATH = APP_DIR / "maxson-gui-utils.log"
 SERVICE = APP_NAME
