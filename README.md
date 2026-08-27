@@ -14,5 +14,5 @@ maxson-gui-utils helptree
 ```
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/maxson-gui-utils/main/assets/assets/maxson-gui-utils_v0.1.3_helptree.svg" width="100%" alt="SVG of the CLI helptree">
+  <img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/maxson-gui-utils/main/assets/assets/maxson-gui-utils_v0.1.4_helptree.svg" width="100%" alt="SVG of the CLI helptree">
 </p>

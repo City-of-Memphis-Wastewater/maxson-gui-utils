@@ -150,11 +150,11 @@ def placeholder(
     console_stderr.print(f"{path=}")
 
 @app.command(name="conweb")
-def launch_configured_website(
+def _launch_configured_website(
 ):
-    """Not just a GUI feature."""
-    launch_configured_website()
-    console_stderr.print(f"{path=}")
+    """Launch website set in config file."""
+    url = launch_configured_website()
+    console_stderr.print(f"{url=}")
 
 
 if __name__ == "__main__":
