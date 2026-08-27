@@ -9,6 +9,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [0.1.4] - 08-27-2026
 ### Added:
 - external_web_launch.launch_configured_website()
+- Launch target dir.
 
 ---
 
