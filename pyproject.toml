@@ -51,6 +51,7 @@ keywords = [
 
 [project.scripts]
 "maxson-gui-utils" = "maxson_gui_utils.__main__:app"
+"mgu" = "maxson_gui_utils.__main__:app"
 
 [dependency-groups]
 test = [
