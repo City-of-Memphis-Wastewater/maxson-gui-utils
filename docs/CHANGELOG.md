@@ -6,8 +6,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [0.1.0] - YYYY-MM-DD
+## [0.1.0] - 08-27-2026
 ### Added:
--
+- Scaffolded with maxson-build-utils
+- Ensure that GUI launches from CLI
+- Include tkinter forest theme
 
 ---
