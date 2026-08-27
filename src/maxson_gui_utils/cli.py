@@ -20,6 +20,8 @@ from .logging_setup import (
     configure_logging_for_application,
 )
 
+from .external_web_launch import launch_configured_website
+
 logger = logging.getLogger(__name__)
 
 console_stderr = Console(stderr=True)
@@ -145,6 +147,13 @@ def placeholder(
     path: Path = Path("path"),
 ):
     """Placeholder."""
+    console_stderr.print(f"{path=}")
+
+@app.command(name="conweb")
+def launch_configured_website(
+):
+    """Not just a GUI feature."""
+    launch_configured_website()
     console_stderr.print(f"{path=}")
 
 

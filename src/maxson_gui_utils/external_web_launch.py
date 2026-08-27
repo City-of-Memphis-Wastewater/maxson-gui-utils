@@ -4,13 +4,13 @@ import webbrowser
 import logging
 
 from .context import SERVICE
-from .config import get_config_manager
+from .config import get_config_mngr
 
 logger = logging.getLogger(__name__)
 
 ITEM_WEB_REF_0 = "web-address-0"
 
-config_mngr = get_config_manager()
+config_mngr = get_config_mngr()
 
 """
 Redesign goals: 
