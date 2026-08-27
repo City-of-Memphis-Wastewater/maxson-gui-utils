@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [0.1.3] - 08-27-2026
+### Added:
+- splash.py and tk_utils.py copied from pdflinkcheck
+
+---
+
 ## [0.1.2] - 08-27-2026
 ### Fixed:
 - In publish.yml, improve CLI help test by adding "uv run"
