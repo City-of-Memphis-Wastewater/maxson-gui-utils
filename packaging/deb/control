@@ -1,0 +1,7 @@
+Package: maxson-gui-utils
+Version: 0.1.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Your Name <you@example.com>
+Description: A Python application.

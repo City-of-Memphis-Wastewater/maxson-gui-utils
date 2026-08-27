@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Maxson Gui Utils
+Exec=maxson-gui-utils
+Icon=maxson-gui-utils
+Type=Application
+Categories=Utility;
+Terminal=false

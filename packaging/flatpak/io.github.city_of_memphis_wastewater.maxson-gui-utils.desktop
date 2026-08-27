@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=maxson-gui-utils
+Exec=maxson-gui-utils
+Icon=io.github.city_of_memphis_wastewater.maxson-gui-utils
+Type=Application
+Categories=Utility;

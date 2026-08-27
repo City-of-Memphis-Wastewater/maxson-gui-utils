@@ -1,0 +1,100 @@
+[project]
+name = "maxson-gui-utils"
+dynamic = ["version"]
+description = "A Python application."
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "dworshak-config>=0.2.8",
+    "pyhabitat>=1.3.9",
+    "typer>=0.27.0",
+    "typer-helptree>=0.2.12",
+]
+
+license = "MIT"
+license-files = ["LICENSE"]
+
+authors = [
+    { name = "Your Name", email = "you@example.com" }
+]
+
+maintainers = [
+    { name = "Your Name", email = "you@example.com" }
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Typing :: Typed",
+    "Development Status :: 3 - Alpha",
+    #"Development Status :: 4 - Beta",
+    #"Development Status :: 5 - Production/Stable",
+]
+
+keywords = [
+
+]
+
+#[project.urls]
+#Homepage = ""
+#Repository = ""
+#Issues = ""
+#Changelog = ""
+
+[project.scripts]
+"maxson-gui-utils" = "maxson_gui_utils.__main__:app"
+
+[dependency-groups]
+test = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+]
+dev = [
+    { include-group = "test" },
+    "build>=1.3.0",
+    "pyinstaller>=6.17.0 ; platform_system == 'Linux' and platform_machine != 'aarch64'",
+    "shiv>=1.0.8",
+    "ruff>=0.7.0 ; platform_system == 'Linux' and platform_machine != 'aarch64'",
+    "maxson-build-utils>=0.1.33",
+]
+
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv.sources]
+"maxson-gui-utils" = { path = "src/maxson_gui_utils" }
+
+[tool.setuptools.dynamic]
+version = { file = "src/maxson_gui_utils/VERSION" }
+
+[tool.setuptools.package-data]
+"maxson_gui_utils" = [
+    "data/*",
+    "data/icons/*",
+    "data/icons/**/*",
+]
+
+[tool.maxson-build-utils.names]
+import = "maxson_gui_utils"
+pretty = "Maxson Gui Utils"
+
+[tool.maxson-build-utils.pyinstaller]
+mode = "onedir"
+windowed = false
+collect_data_pkgs = ["maxson_gui_utils"]
+collect_binary_pkgs = []
+
+[tool.maxson-build-utils.packaging.msix]
+publisher = "CN=806FDEBD-B014-4625-85AE-058C714FC7F2"
+publisher_display_name = "George Clayton Bennett"
+identity_name = "GeorgeClaytonBennett.MaxsonGuiUtils"
