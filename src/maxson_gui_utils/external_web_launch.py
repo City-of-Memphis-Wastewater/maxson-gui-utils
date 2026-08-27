@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 ITEM_WEB_REF_0 = "web-address-0"
 
-config_mngr = get_config_mngr()
 
 """
 Redesign goals: 
@@ -19,11 +18,13 @@ Redesign goals:
 
 """
 
-def launch_configured_website(service:str|None=None,item:str|None=None)->str:
+def launch_configured_website(config_mngr=None,service:str|None=None,item:str|None=None)->str:
     if service is None:
         service = SERVICE
     if item is None:
         item = ITEM_WEB_REF_0
+    if config_mngr is none:
+        config_mngr = get_config_mngr()
 
     config_mngr.set(service=SERVICE,item=item,value="",overwrite=False) # creates file and defauly value if it doesn't exist
     url = config_mngr.get(service=SERVICE,item=item) # allows retrieval of edited value

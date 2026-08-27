@@ -4,6 +4,12 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+----
+
+## [0.1.5] - 08-27-2026
+### Added:
+- Allow config_mngr to be injected into launch configured website.
+
 ---
 
 ## [0.1.4] - 08-27-2026
