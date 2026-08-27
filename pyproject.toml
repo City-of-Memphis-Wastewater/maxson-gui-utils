@@ -75,8 +75,8 @@ build-backend = "setuptools.build_meta"
 [tool.uv.sources]
 "maxson-gui-utils" = { path = "src/maxson_gui_utils" }
 
-[tool.setuptools]
-packages = ["maxson_gui_utils"]
+#[tool.setuptools]
+#packages = ["maxson_gui_utils"]
 
 [tool.setuptools.dynamic]
 version = { file = "src/maxson_gui_utils/VERSION" }
