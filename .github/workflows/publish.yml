@@ -1,6 +1,6 @@
 # .github/workflows/publish.yml
 
-name: Check and Publish ${{ pretty_name }} to PyPI and Releases
+name: Check and Publish Maxson Build Utils to PyPI and Releases
 
 on:
   release:
