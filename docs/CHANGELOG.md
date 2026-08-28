@@ -1,8 +1,14 @@
-
+\
 # Changelog
 
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+----
+
+## [0.1.8] - 08-28-2026
+### Fixed:
+- Replace '‑' (U+2011) with common hyphen, '-', in ./docs/Spot*.md
 
 ----
 
