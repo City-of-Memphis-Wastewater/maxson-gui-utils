@@ -8,7 +8,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## [0.1.6] - 08-28-2026
 ### Added:
-- blindwindow lives, 'mgui blindwindow'
+- Blindwindow lives, `mgui blindwindow`
+- Why: Route console stderr and stdout to blindwindow, to either duplicate or display what is otherwise hidden. Namely for MSIX deployed CLI's.
+- Render console stderr and stdout to a TKinter based REPL widget masquerading as a log pange.
+- Use Case: When calling a CLI packaged inside of a MSIX that has been delivered via the Microsoft Store. This use case typically does not allow prints. Example: pdflinkcheck.exe serve --help
 
 ----
 
