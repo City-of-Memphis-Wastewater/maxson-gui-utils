@@ -44,5 +44,5 @@ def launch_configured_website(path:Path|str|None=None,service:str|None=None,item
         console_stderr.print("")
         return None
 
-    pyhabitat.launch_browser_now("https://www.awwa.org")
+    pyhabitat.launch_browser_now(url)
     return url
