@@ -6,8 +6,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ----
 
+## [0.1.10] - 08-28-2026
+### Fixed:
+- SVG asset reference URL
+
+----
+
 ## [0.1.9] - 08-28-2026
-### Changeed:
+### Changed:
 - Add back the config_mngr.set() usage in launch_configured_website()
 - Improve stderr messaging in case of config.set() with key mutation.
 - Provide CLI guidance for adding a website.
