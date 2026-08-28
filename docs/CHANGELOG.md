@@ -12,6 +12,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Improve stderr messaging in case of config.set() with key mutation.
 - Provide CLI guidance for adding a website.
 - Separate out url as stdout.
+- Blindwindow protected and warning provided if TKinter is not available.
 
 ----
 
