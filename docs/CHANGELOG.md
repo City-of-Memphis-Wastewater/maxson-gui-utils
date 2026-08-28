@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ----
 
+## [0.1.6] - 08-28-2026
+### Added:
+- blindwindow lives, 'mgui blindwindow'
+
+----
+
 ## [0.1.5] - 08-27-2026
 ### Added:
 - Allow config path to be injected into launch configured website, in args and in CLI.
