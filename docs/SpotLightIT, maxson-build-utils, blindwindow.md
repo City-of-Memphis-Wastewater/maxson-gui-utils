@@ -228,13 +228,13 @@ You're welcome. This is not shadow it? This is SpotLight IT
 ---
 
 ```copilot
-**Short answer:** You’ve handed me a _dense, highly technical monologue_ about your architecture philosophy for **Maxim Build Utils**, **GUI Utils**, config‑loading waterfalls, REPL integration, Windows Store packaging constraints, and a clever workaround (“blind window”) for capturing stdout/stderr when MSIX apps cannot show a console.
+**Short answer:** You’ve handed me a _dense, highly technical monologue_ about your architecture philosophy for **Maxim Build Utils**, **GUI Utils**, config-loading waterfalls, REPL integration, Windows Store packaging constraints, and a clever workaround (“blind window”) for capturing stdout/stderr when MSIX apps cannot show a console.
 
 Below is a **structured, accurate summary** grounded directly in the transcript, with citations from the document as required.
 
 ## 🧠 Core Takeaway
 
-You’re outlining a unified philosophy for Python tooling where **CLI flags, pyproject.toml, fallback config files, and function defaults** form a predictable “waterfall” of configuration sources. You then extend this philosophy into GUI scaffolding, REPL embedding, Windows Store distribution, and a logging redirection system (“blind window”) that restores CLI‑style debugging inside MSIX‑packaged apps.
+You’re outlining a unified philosophy for Python tooling where **CLI flags, pyproject.toml, fallback config files, and function defaults** form a predictable “waterfall” of configuration sources. You then extend this philosophy into GUI scaffolding, REPL embedding, Windows Store distribution, and a logging redirection system (“blind window”) that restores CLI-style debugging inside MSIX-packaged apps.
 
 ## 🔧 1. Configuration Waterfall (Your Big Idea)
 
@@ -265,9 +265,9 @@ You outline a reusable GUI scaffolding system built on Tkinter:
 
 - Reusable widgets (launch website, REPL, file selectors, etc.)
     
-- A built‑in **Python REPL** so users can run library functions without installing Python
+- A built-in **Python REPL** so users can run library functions without installing Python
     
-- A “MATLAB‑like” feel where the GUI exposes the library’s core logic
+- A “MATLAB-like” feel where the GUI exposes the library’s core logic
     
 - Spreadsheet export (**XLSX**) as “GUI for free”
     
@@ -315,7 +315,7 @@ You describe using two windows:
 
 ## 📁 5. File Processing, Automation & Data Pipelines
 
-You outline a clever “non‑API API” workflow for clients who lack API literacy:
+You outline a clever “non-API API” workflow for clients who lack API literacy:
 
 - You email them spreadsheets daily
     
@@ -374,10 +374,10 @@ Your transcript lays out a **holistic architecture** for Python tooling and GUI 
     
 - A logging redirection system (“blind window”) to restore CLI behavior
     
-- A practical workflow for non‑technical clients using emailed spreadsheets + automation
+- A practical workflow for non-technical clients using emailed spreadsheets + automation
     
 
-It’s a blueprint for turning Python libraries into **installable, GUI‑driven, REPL‑powered desktop applications** that behave like professional tools even under MSIX restrictions.
+It’s a blueprint for turning Python libraries into **installable, GUI-driven, REPL-powered desktop applications** that behave like professional tools even under MSIX restrictions.
 
 If you want, I can build:
 
@@ -412,13 +412,13 @@ also, you should learn about dworshak-config, it is useful and is a good, simple
 ```
 
 ```copilot
-**Feasibility verdict:** All four components you listed — **blindwindow**, **API‑for‑free (government laptop edition)**, **embedded REPL**, and the other architectural elements — are _feasible_, but each has a different level of engineering complexity, regulatory friction, and UX constraints. Some are nearly trivial; others require careful packaging and Windows Store compliance work.
+**Feasibility verdict:** All four components you listed — **blindwindow**, **API-for-free (government laptop edition)**, **embedded REPL**, and the other architectural elements — are _feasible_, but each has a different level of engineering complexity, regulatory friction, and UX constraints. Some are nearly trivial; others require careful packaging and Windows Store compliance work.
 
 Below is a **clear feasibility breakdown**, grounded in your transcript (with citations) and expanded into practical engineering reality.
 
 # ✅ 1. **Blindwindow** — _Highly feasible, technically straightforward, strategically powerful_
 
-**Feasibility:** ★★★★★ (very high) **Complexity:** Low–Medium **Risk:** Low **Value:** Extremely high for MSIX‑distributed CLI tools
+**Feasibility:** ★★★★★ (very high) **Complexity:** Low–Medium **Risk:** Low **Value:** Extremely high for MSIX-distributed CLI tools
 
 ### Why it’s feasible
 
@@ -454,11 +454,11 @@ It restores the _entire CLI debugging experience_ inside MSIX, which normally ki
 
 > “It will not print… It cannot print to the terminal.”
 
-Blindwindow is the missing piece that makes MSIX viable for developer‑grade tools.
+Blindwindow is the missing piece that makes MSIX viable for developer-grade tools.
 
-# ✅ 2. **API‑for‑free (government laptop edition)**
+# ✅ 2. **API-for-free (government laptop edition)**
 
-**Feasibility:** ★★★★☆ (high) **Complexity:** Medium **Risk:** Medium (IT policy constraints) **Value:** Very high for non‑technical clients
+**Feasibility:** ★★★★☆ (high) **Complexity:** Medium **Risk:** Medium (IT policy constraints) **Value:** Very high for non-technical clients
 
 ### Why it’s feasible
 
@@ -519,7 +519,7 @@ This is absolutely feasible because:
     
 - You can preload your library functions into the REPL namespace.
     
-- This gives a MATLAB‑like experience.
+- This gives a MATLAB-like experience.
     
 
 ### Engineering path
@@ -528,7 +528,7 @@ This is absolutely feasible because:
     
 - Preload your library into the REPL environment.
     
-- Add file‑picker widgets so users can run commands on local files.
+- Add file-picker widgets so users can run commands on local files.
     
 
 ### Why this is powerful
@@ -537,7 +537,7 @@ It eliminates the need for buttons:
 
 > “You don’t have to provide buttons anymore… they can traverse their file system and perform operations.”
 
-This is the most feasible and highest‑value part of your architecture.
+This is the most feasible and highest-value part of your architecture.
 
 # ✅ 4. **Other elements (config waterfall, XLSX export, JSON/CSV ingestion)**
 
@@ -549,7 +549,7 @@ Everything else you described is already standard practice:
     
     > “CLI flag → pyproject → dworshak config → function defaults.”
     
-- **XLSX export as GUI‑for‑free**
+- **XLSX export as GUI-for-free**
     
     > “If you can provide someone with a spreadsheet… you just GUI for free.”
     
@@ -560,7 +560,7 @@ Everything else you described is already standard practice:
 
 These are all trivial to implement and extremely stable.
 
-# 📘 About **dworshak‑config**
+# 📘 About **dworshak-config**
 
 I reviewed the repo. It aligns perfectly with your waterfall philosophy:
 
@@ -579,7 +579,7 @@ It matches your transcript:
 
 > “Boolean acceptable… path acceptable… enum must be documented… you could blow people’s legs off.”
 
-dworshak‑config is a **good fit** for your architecture because it is:
+dworshak-config is a **good fit** for your architecture because it is:
 
 - Minimal
     
@@ -592,14 +592,14 @@ dworshak‑config is a **good fit** for your architecture because it is:
 - Easy to fall back to
     
 
-It’s exactly the right level of complexity for MSIX‑distributed tools.
+It’s exactly the right level of complexity for MSIX-distributed tools.
 
 # 🎯 Final Feasibility Summary
 
 |Component|Feasibility|Complexity|Risk|Notes|
 |---|---|---|---|---|
 |**Blindwindow**|★★★★★|Medium|Low|Solves MSIX console ban elegantly|
-|**API‑for‑free**|★★★★☆|Medium|Medium|Policy constraints, not technical|
+|**API-for-free**|★★★★☆|Medium|Medium|Policy constraints, not technical|
 |**Embedded REPL**|★★★★★|Low|Low|Python already bundled; huge UX win|
 |**Config waterfall + dworshak**|★★★★★|Low|None|Perfect fit for your philosophy|
 |**XLSX/CSV/JSON ingestion**|★★★★★|Low|None|Standard tooling|
@@ -647,7 +647,7 @@ See my thinking
         
 - **Cons:**
     
-    - Intimidating for non‑developers.
+    - Intimidating for non-developers.
         
     - Easy to “fall off the happy path.”
         
@@ -1248,7 +1248,7 @@ so blindwindow would work whether powershell printing is availble or not? it's n
 - **When PowerShell printing is** _**blocked**_ **(MSIX)**, blindwindow becomes the **only visible feedback channel**.
     
 
-That dual‑mode behavior is _precisely_ what makes blindwindow such a powerful architectural piece.
+That dual-mode behavior is _precisely_ what makes blindwindow such a powerful architectural piece.
 
 ## 🔍 Why blindwindow works whether PowerShell prints or not
 
@@ -1269,7 +1269,7 @@ This is because blindwindow attaches **directly to the Python process**, not to 
 
 Here’s the mental model:
 
-### Normal Python app (non‑MSIX)
+### Normal Python app (non-MSIX)
 
 Code
 
@@ -1442,7 +1442,7 @@ great. what does blindwindow have in common with a tkinter based repl widget? ca
 ```
 
 ```copilot
-**Short answer:** Yes — blindwindow and a Tkinter‑based REPL widget share _a ton_ of architecture. They can absolutely share modules. And yes — blindwindow can literally _be_ a REPL that simply has `input_disabled=True`, making it a “REPL‑shaped log pane.”
+**Short answer:** Yes — blindwindow and a Tkinter-based REPL widget share _a ton_ of architecture. They can absolutely share modules. And yes — blindwindow can literally _be_ a REPL that simply has `input_disabled=True`, making it a “REPL-shaped log pane.”
 
 Below is a structured breakdown of how these pieces fit together, why they’re compatible, and how to design them so **maxson-gui-utils** becomes the shared foundation.
 
