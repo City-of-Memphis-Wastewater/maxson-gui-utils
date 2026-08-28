@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 from dworshak_config import DworshakConfig
 from rich.console import Console
+import pyhabitat
 
 from .context import SERVICE, CONFIG_PATH
 
@@ -35,7 +36,7 @@ def launch_configured_website(path:Path|str|None=None,service:str|None=None,item
     # If the user left it blank, or it's purely whitespace, use the default path
     if not url or not str(url).strip():
         config_mngr.set(service=SERVICE,item=item,value="",overwrite=False) # allows retrieval of edited value
-        console_stderr.print("Configured URL is None. Configuration file mutated, keys of opportunity generated with:")
+        console_stderr.print("Configured URL is None. Configuration file mutated, keys created in config file: {path}")
         console_stderr.print(f'config_mngr.set(service="{SERVICE}",item="{item}",value="",overwrite=False)')
         console_stderr.print("")
         console_stderr.print("To set the value, run dworshak-config CLI like this.")
@@ -43,22 +44,5 @@ def launch_configured_website(path:Path|str|None=None,service:str|None=None,item
         console_stderr.print("")
         return None
 
-    launch_web_url(url)
+    pyhabitat.launch_browser_now("https://www.awwa.org")
     return url
-
-def launch_web_url(url: str) -> bool:
-    """
-    Opens the specified URL in the user's default browser using the standard library.
-
-    Returns:
-        bool: True if the browser was successfully launched, False otherwise.
-    """
-    try:
-        # new=2 opens the URL in a new tab if possible
-        success = webbrowser.open(url, new=2)
-        if not success:
-            logger.error(f"Failed to open URL via webbrowser module: {url}")
-        return success
-    except Exception as e:
-        logger.error(f"An error occurred while trying to launch the URL: {e}")
-        return False
