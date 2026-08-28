@@ -6,6 +6,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ----
 
+## [0.1.9] - 08-28-2026
+### Changeed:
+- Add back the config_mngr.set() usage in launch_configured_website()
+- Improve stderr messaging in case of config.set() with key mutation.
+- Provide CLI guidance for adding a website.
+- Separate out url as stdout.
+
+----
+
 ## [0.1.8] - 08-28-2026
 ### Fixed:
 - Replace '‑' (U+2011) with common hyphen, '-', in ./docs/Spot*.md
