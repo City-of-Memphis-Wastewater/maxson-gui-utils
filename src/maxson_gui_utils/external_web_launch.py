@@ -4,10 +4,12 @@ import webbrowser
 import logging
 from pathlib import Path
 from dworshak_config import DworshakConfig
+from rich.console import Console
 
 from .context import SERVICE, CONFIG_PATH
 
 logger = logging.getLogger(__name__)
+console_stderr = Console(stderr=True)
 
 ITEM_WEB_REF_0 = "web-address-0"
 
@@ -28,6 +30,8 @@ def launch_configured_website(path:Path|str|None=None,service:str|None=None,item
         path = CONFIG_PATH
 
     config_mngr = DworshakConfig(path = path)
+    config_mngr.set(service=SERVICE,item=item,overwrite=False) # allows retrieval of edited value
+    console_std.print(f"config_mngr.set(service={SERVICE},item={item},overwrite=False)")
     url = config_mngr.get(service=SERVICE,item=item) # allows retrieval of edited value
 
     # If the user left it blank, or it's purely whitespace, use the default path
