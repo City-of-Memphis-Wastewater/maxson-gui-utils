@@ -176,8 +176,8 @@ def _launch_configured_website(
 ):
     """Launch website set in config file."""
     url = launch_configured_website(path=path,service=service,item=item)
-    console_stderr.print(f"{url=}")
-
+    console_stderr.print("url=")
+    console_stdout.print(url)
 
 if __name__ == "__main__":
     app()
