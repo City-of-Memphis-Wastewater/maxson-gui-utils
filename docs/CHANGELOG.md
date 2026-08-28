@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ----
 
+## [0.1.7] - 08-28-2026
+### Added:
+- shiv runner, build-pyz.yml, based on `uv run mbu build shiv`.
+
+----
+
 ## [0.1.6] - 08-28-2026
 ### Added:
 - Blindwindow lives, `mgui blindwindow`
