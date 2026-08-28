@@ -37,7 +37,8 @@ def launch_configured_website(path:Path|str|None=None,service:str|None=None,item
     if not url or not str(url).strip():
         config_mngr.set(service=service,item=item,value="",overwrite=False) # allows retrieval of edited value
         console_stderr.print("")
-        console_stderr.print("Configured URL is None. Configuration file mutated, keys created in config file: {path}")
+        console_stderr.print(f"Configured URL is None. Configuration file mutated, keys created in config file: {path}")
+        console_stderr.print("Mutation command:")
         console_stderr.print(f'config_mngr.set(service="{service}",item="{item}",value="",overwrite=False)')
         console_stderr.print("")
         console_stderr.print("To set the value, run dworshak-config CLI like this:")
