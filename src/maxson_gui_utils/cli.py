@@ -149,6 +149,15 @@ def placeholder(
     """Placeholder."""
     console_stderr.print(f"{path=}")
 
+@app.command(name="blindwindow")
+def blindwindow_command() -> None:
+    """
+    Launch BlindWindow to capture stdout/stderr in a GUI window.
+    """
+    from .blindwindow import start_blindwindow
+    start_blindwindow()
+
+
 @app.command(name="conweb")
 def _launch_configured_website(
     path: Path | None = typer.Option(None, "--path", "-p", help="Path to config file, a la dworshak-config."),
