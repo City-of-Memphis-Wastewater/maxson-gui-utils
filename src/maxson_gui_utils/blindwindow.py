@@ -1,25 +1,34 @@
 # src/maxson_gui_utils/blindwindow.py
 
 import sys
-import tkinter as tk
-from .textpane import TextPane
-from .streams import GuiStream, TeeStream
-from .ansi import strip_ansi
+import logging
+import pyhabitat
 
-class BlindWindow(TextPane):
-    """
-    Passive text display that captures stdout/stderr.
-    """
-    def __init__(self, master=None, **kwargs):
-        super().__init__(master, **kwargs)
-
-        # Redirect stdout/stderr
-        gui_stream = GuiStream(lambda text: self.append(strip_ansi(text)))
-        sys.stdout = TeeStream(sys.stdout, gui_stream)
-        sys.stderr = TeeStream(sys.stderr, gui_stream)
+logger = logging.getLogger(__name__)
 
 def start_blindwindow() -> None:
     """Launch BlindWindow as a standalone Tkinter app."""
+    if not pyhabitat.tkinter_is_available():
+        logger.error("BlindWindow requires Tkinter, not available in this environment.")
+        return
+
+    import tkinter as tk
+    from .textpane import TextPane
+    from .streams import GuiStream, TeeStream
+    from .ansi import strip_ansi
+
+    class BlindWindow(TextPane):
+        """
+        Passive text display that captures stdout/stderr.
+        """
+        def __init__(self, master=None, **kwargs):
+            super().__init__(master, **kwargs)
+
+            # Redirect stdout/stderr
+            gui_stream = GuiStream(lambda text: self.append(strip_ansi(text)))
+            sys.stdout = TeeStream(sys.stdout, gui_stream)
+            sys.stderr = TeeStream(sys.stderr, gui_stream)
+
     root = tk.Tk()
     root.title("BlindWindow")
     bw = BlindWindow(root)
