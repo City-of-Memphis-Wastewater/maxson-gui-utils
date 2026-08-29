@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from importlib.resources import files
 from importlib.abc import Traversable
-
+from collections.abc import Iterator
 from contextlib import contextmanager
 from importlib.resources import as_file
 
@@ -23,7 +23,7 @@ def read_resource_bytes(*parts: str) -> bytes:
     return resource_path(*parts).read_bytes()
 
 @contextmanager
-def resource_file(*parts: str)->Path:
+def resource_file(*parts: str)->Iterator[Path]:
     resource = resource_path(*parts)
     with as_file(resource) as path:
         yield path
