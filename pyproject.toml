@@ -3,12 +3,14 @@ name = "maxson-gui-utils"
 dynamic = ["version"]
 description = "A Python application."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 
 dependencies = [
     "dworshak-config>=0.2.8",
     "pyhabitat>=1.3.9",
-    "typer>=0.27.0",
+    #"typer>=0.27.0",
+    "typer>=0.24.0; python_version >= '3.10'",
+    "typer>=0.22.0,<0.24.0; python_version < '3.10'",
     "typer-helptree>=0.2.12",
 ]
 
@@ -66,7 +68,7 @@ dev = [
     "ruff>=0.7.0 ; platform_system == 'Linux' and platform_machine != 'aarch64'",
     "maxson-build-utils>=0.1.33",
 ]
-
+standard = []
 
 [build-system]
 requires = ["setuptools>=64", "wheel"]
