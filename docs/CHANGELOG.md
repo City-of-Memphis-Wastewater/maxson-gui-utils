@@ -14,6 +14,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Added:
 - resources.py, to carry and deliver logos and gui theme files.
 - standard group empty placeholder.
+
 ----
 
 ## [0.1.10] - 08-28-2026
