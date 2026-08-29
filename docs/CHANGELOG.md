@@ -6,6 +6,16 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ----
 
+## [0.1.11] - 08-29-2026
+### Changed:
+- Regain python 3.9.support by adding typer dep range
+- Remove maxson-build-utils as a dep.
+
+### Added:
+- resources.py, to carry and deliver logos and gui theme files.
+- standard group empty placeholder.
+----
+
 ## [0.1.10] - 08-28-2026
 ### Fixed:
 - SVG asset reference URL
