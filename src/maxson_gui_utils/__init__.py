@@ -9,8 +9,10 @@ from ._version import __version__
 # 1. Clean public-facing mapping
 __all__ = [
     "__version__",
-
     "__gui_easteregg_enabled__",
+    "Console",
+    "TeeStream",
+    "GuiStream",
 ]
 
 
@@ -23,6 +25,19 @@ def _check_easteregg_env() -> bool:
 # 2. Fully dynamic attribute routing
 def __getattr__(name: str):
 
+    if name == "Console":
+        from .console import Console
+        return Console
+
+    if name == "GuiStream":
+        from .streams import GuiStream
+        return GuiStream
+
+    if name == "TeeStream":
+        from .streams import TeeStream
+        return TeeStream
+
+        
     # Dynamic boolean evaluation for the breadcrumb attribute
     if name == "__gui_easteregg_enabled__":
         return _check_easteregg_env()

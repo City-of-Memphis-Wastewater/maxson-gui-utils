@@ -17,6 +17,10 @@ def unregister_listener(callback: Callable[[str, str], None]) -> None:
         _LISTENERS.remove(callback)
 
 def dispatch_write(text: str, tag: str = "stdout") -> None:
-    """Dispatches streamed text to all registered pane listeners."""
-    for listener in _LISTENERS:
-        listener(text, tag)
+    """Dispatches text chunks to registered UI listeners."""
+    for listener in list(_LISTENERS):
+        try:
+            listener(text, tag)
+        except Exception:
+            # Prevent a GUI callback failure from crashing the CLI/Logger pipeline
+            pass
