@@ -4,6 +4,14 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
+## [0.1.13] - 09-01-2026
+### Changed:
+- In github runners, use but do not depend on mbu in pyproject.toml
+    - "run: uvx --from maxson-build-utils mbu build pyinstaller --mode onedir"
+    - "run: uvx --from maxson-build-utils mbu build shiv"
+
 ----
 
 ## [0.1.12] - 09-01-2026
