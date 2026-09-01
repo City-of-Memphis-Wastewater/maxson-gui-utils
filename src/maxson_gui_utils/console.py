@@ -42,10 +42,10 @@ def Console(
     """
     resolved_tag = tag if tag is not None else ("stderr" if stderr else "stdout")
 
-    def _debug_dispatch(text: str, tag_val: str = resolved_tag) -> None:
+    def _debug_dispatch(text: str, tag: str = resolved_tag) -> None:
         if debug_stream:
-            logger.debug(f"[Stream Dispatch] tag={tag_val} | bytes={len(text)} | text={text!r}")
-        dispatch_write(text, tag=tag_val)
+            logger.debug(f"[Stream Dispatch] tag={tag} | bytes={len(text)} | text={text!r}")
+        dispatch_write(text, tag=tag)
 
     gui_stream = GuiStream(_debug_dispatch, tag=resolved_tag)
 
