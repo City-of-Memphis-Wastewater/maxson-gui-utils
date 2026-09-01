@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ----
 
+## [0.1.12] - 09-01-2026
+### Changed:
+- BlindWindow refactor and console.Console exposure.
+
+----
+
 ## [0.1.11] - 08-29-2026
 ### Changed:
 - Regain python 3.9.support by adding typer dep range
