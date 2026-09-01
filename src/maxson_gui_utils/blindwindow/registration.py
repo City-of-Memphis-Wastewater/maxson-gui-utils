@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # src/maxson_gui_utils/registration.py
 from __future__ import annotations
-
+import sys
 import json
 import socket
 from typing import Any, Callable, List
