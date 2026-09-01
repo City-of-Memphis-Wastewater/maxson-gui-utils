@@ -26,6 +26,13 @@ def unregister_listener(callback: Callable[[str, str], None]) -> None:
 
 # ----
 
+# File-based socket path fallback for POSIX / WSL shared paths
+def get_uds_path() -> Path:
+    """Returns a cross-platform user runtime directory for UDS if needed."""
+    if sys.platform == "win32":
+        return Path(os.environ.get("LOCALAPPDATA", Path.home())) / "maxson_gui_ipc.sock"
+    return Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "maxson_gui_ipc.sock"
+    
 def dispatch_write(text: str, tag: str = "stdout") -> None:
     """Dispatches text chunks to in-process listeners and broadcasts via cross-platform IPC."""
     # 1. In-process dispatch
@@ -38,11 +45,14 @@ def dispatch_write(text: str, tag: str = "stdout") -> None:
     # 2. Cross-process IPC dispatch (fire-and-forget)
     payload_dict = {"text": text, "tag": tag}
 
+    # If running on native Windows (non-WSL), try Named Pipe first
     if sys.platform == "win32":
-        _send_named_pipe(payload_dict)
+        if not _send_named_pipe(payload_dict):
+            _send_udp(payload_dict)
     else:
+        # Running in WSL or Linux: UDP crosses the WSL2/Windows host boundary cleanly
         _send_udp(payload_dict)
-
+        
 
 def _send_named_pipe(payload_dict: dict) -> None:
     """Windows-safe IPC using Named Pipes (bypasses Windows Firewall / MSIX warnings)."""
