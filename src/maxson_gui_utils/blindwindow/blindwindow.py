@@ -132,7 +132,6 @@ def start_blindwindow() -> None:
         return
 
     import tkinter as tk
-
     root = tk.Tk()
     root.title("BlindWindow")
     bw = BlindWindow(root)
