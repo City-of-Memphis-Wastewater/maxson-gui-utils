@@ -2,6 +2,8 @@
 # src/maxson_gui_utils/streams.py
 from __future__ import annotations
 from typing import Callable, Optional, Any
+import sys
+from .registration import dispatch_write
 
 class GuiStream:
     """
@@ -41,3 +43,31 @@ class TeeStream:
         for s in self.streams:
             if hasattr(s, "flush"):
                 s.flush()
+
+
+class SystemStreamWrapper:
+    """Wraps process-level sys.stdout or sys.stderr to route writes through dispatch_write."""
+    def __init__(self, target, tag: str = "stdout"):
+        self.target = target
+        self.tag = tag
+
+    def write(self, text: str) -> int:
+        if self.target:
+            self.target.write(text)
+        dispatch_write(text, tag=self.tag)
+        return len(text)
+
+    def flush(self) -> None:
+        if self.target and hasattr(self.target, "flush"):
+            self.target.flush()
+
+    def isatty(self) -> bool:
+        return getattr(self.target, "isatty", lambda: False)()
+
+def install_stream_wrappers() -> None:
+    """Redirect process-level sys.stdout and sys.stderr to broadcast via dispatch_write."""
+    if not isinstance(sys.stdout, SystemStreamWrapper):
+        sys.stdout = SystemStreamWrapper(sys.stdout, tag="stdout")
+    if not isinstance(sys.stderr, SystemStreamWrapper):
+        sys.stderr = SystemStreamWrapper(sys.stderr, tag="stderr")
+

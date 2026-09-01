@@ -8,7 +8,7 @@ import socket
 import threading
 import json
 
-from .textpane import TextPane
+from maxson_gui_utils.textpane import TextPane
 from .streams import GuiStream, TeeStream
 from .ansi import strip_ansi
 from .registration import IPC_HOST, IPC_PORT, register_listener, unregister_listener
@@ -68,8 +68,11 @@ class BlindWindow(TextPane):
 
                 logger.debug(f"[BlindWindow UDP Recv] tag={tag} | bytes={len(text)}")
                 
+                # Strip ANSI sequences before inserting into Tkinter TextPane
+                clean_text = strip_ansi(text)
                 # Thread safety: Schedule write execution on Tkinter's main UI thread
-                self.after(0, self.append, text, tag)
+                self.after(0, self.append, clean_text, tag)
+
             except socket.timeout:
                 continue
             except Exception:
