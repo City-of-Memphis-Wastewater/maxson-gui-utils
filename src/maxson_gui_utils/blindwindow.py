@@ -4,10 +4,13 @@ from __future__ import annotations
 import sys
 import logging
 import pyhabitat
+import socket
+import threading
+
 from .textpane import TextPane
 from .streams import GuiStream, TeeStream
 from .ansi import strip_ansi
-from .registration import register_listener, unregister_listener
+from .registration import IPC_HOST, IPC_PORT, register_listener, unregister_listener
 
 logger = logging.getLogger(__name__)
 
