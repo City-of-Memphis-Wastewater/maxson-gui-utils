@@ -6,6 +6,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [0.1.14] - 09-01-2026
+### Changed:
+- In github runners, use but do not depend on mbu in pyproject.toml
+    - "run: uvx --from maxson-build-utils --with pyinstallermbu build pyinstaller --mode onedir"
+    - "run: uvx --from maxson-build-utils --with shiv mbu build shiv"
+
+---
+
 ## [0.1.13] - 09-01-2026
 ### Changed:
 - In github runners, use but do not depend on mbu in pyproject.toml
