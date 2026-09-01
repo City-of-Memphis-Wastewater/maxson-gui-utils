@@ -1,7 +1,8 @@
 # src/maxson_gui_utils/splash.py
+from __future__ import annotations
 import tkinter as tk
 from tkinter import ttk
-from pdflinkcheck.tk_utils import center_window_on_primary
+from .tk_utils import center_window_on_primary
 
 class SplashFrame:
 

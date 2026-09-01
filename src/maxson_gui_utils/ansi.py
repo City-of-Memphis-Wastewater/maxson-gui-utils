@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # src/maxson_gui_utils/ansi.py
-
+from __future__ import annotations
 import re
 
 # Matches standard ANSI escape sequences (CSI sequences like \x1b[...m)

@@ -1,5 +1,5 @@
 # src/maxson_gui_utils/repl.py
-
+from __future__ import annotations
 import code
 import tkinter as tk
 from tkinter import ttk

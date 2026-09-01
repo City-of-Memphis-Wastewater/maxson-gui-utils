@@ -1,4 +1,5 @@
 # src/maxson_gui_utils/tk_utils.py
+from __future__ import annotations
 import tkinter as tk
 import re
 import platform

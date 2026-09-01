@@ -1,5 +1,5 @@
-
 # src/maxson_gui_utils/_version.py
+from __future__ import annotations
 from pathlib import Path
 from .context import APP_NAME
 def get_version() -> str:
