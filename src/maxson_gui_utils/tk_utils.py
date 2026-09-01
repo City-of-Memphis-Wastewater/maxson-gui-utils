@@ -3,7 +3,15 @@ import tkinter as tk
 import re
 import platform
 import logging
+from importlib.resources import as_file
+from importlib.resources.abc import Traversable
+from pathlib import Path
+from typing import Optional
+
 logger = logging.getLogger(__name__)
+
+FILENAME_TK_ICONBITMAP_ICO_DEFAULT = "default_512px.ico"
+FILENAME_TK_ICONPHOTO_PNG_DEFAULT = "default_150px.png"
 
 def run_xrandr_query():
     """
@@ -105,3 +113,96 @@ def center_window_on_primary(window: tk.Toplevel | tk.Tk, width: int, height: in
         y = (ph // 2) - (height // 2)
 
     window.geometry(f"{width}x{height}+{int(x)}+{int(y)}")
+
+
+def get_mgu_icon_file(filename: str) -> Traversable:
+    from maxson_gui_utils.resources import resource_path
+
+    icon_dir = resource_path("icons")
+    return icon_dir.joinpath(filename)
+
+
+def get_default_tk_iconbitmap_filepath(
+    filename: str = FILENAME_TK_ICONBITMAP_ICO_DEFAULT,
+) -> Traversable:
+    return get_mgu_icon_file(filename)
+
+
+def get_default_tk_iconphoto_filepath(
+    filename: str = FILENAME_TK_ICONPHOTO_PNG_DEFAULT,
+) -> Traversable:
+    return get_mgu_icon_file(filename)
+
+
+def set_tk_iconbitmap(
+    root: tk.Tk,
+    icon_dir: Optional[Path | Traversable] = None,
+    filename: Optional[str] = None,
+) -> None:
+    """Sets the project iconbitmap on root.
+
+    Falls back to MGU default lazily if custom path is missing or None.
+    """
+    resource: Optional[Path | Traversable] = None
+
+    if icon_dir is not None and filename is not None:
+        try:
+            candidate = icon_dir.joinpath(filename)
+            if candidate.exists():
+                resource = candidate
+        except Exception as e:
+            logger.debug(f"Failed to resolve path ({icon_dir=}, {filename=}): {e}")
+
+    if resource is None:
+        default_candidate = get_default_tk_iconbitmap_filepath()
+        if default_candidate.exists():
+            resource = default_candidate
+
+    if resource is not None:
+        try:
+            with as_file(resource) as resolved_path:
+                root.iconbitmap(str(resolved_path))
+        except Exception as e:
+            logger.debug(f"Failed to apply iconbitmap: {e}")
+    else:
+        logger.debug(
+            f"Neither custom iconbitmap ({filename}) nor default MGU iconbitmap found."
+        )
+
+
+def set_tk_iconphoto(
+    root: tk.Tk,
+    icon_dir: Optional[Path | Traversable] = None,
+    filename: Optional[str] = None,
+) -> None:
+    """Sets the project iconphoto on root.
+
+    Falls back to MGU default lazily if custom path is missing or None.
+    """
+    resource: Optional[Path | Traversable] = None
+
+    if icon_dir is not None and filename is not None:
+        try:
+            candidate = icon_dir.joinpath(filename)
+            if candidate.exists():
+                resource = candidate
+        except Exception as e:
+            logger.debug(f"Failed to resolve path ({icon_dir=}, {filename=}): {e}")
+
+    if resource is None:
+        default_candidate = get_default_tk_iconphoto_filepath()
+        if default_candidate.exists():
+            resource = default_candidate
+
+    if resource is not None:
+        try:
+            with as_file(resource) as resolved_path:
+                img = tk.PhotoImage(file=str(resolved_path))
+                root._icon_img = img  # Store reference on root instance to prevent GC
+                root.iconphoto(True, root._icon_img)
+        except Exception as e:
+            logger.debug(f"Failed to apply iconphoto: {e}")
+    else:
+        logger.debug(
+            f"Neither custom iconphoto ({filename}) nor default MGU iconphoto found."
+        )
