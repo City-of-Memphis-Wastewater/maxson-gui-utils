@@ -154,7 +154,7 @@ def blindwindow_command() -> None:
     """
     Launch BlindWindow to capture stdout/stderr in a GUI window.
     """
-    from .blindwindow import start_blindwindow
+    from .blindwindow.blindwindow import start_blindwindow
     start_blindwindow()
 
 

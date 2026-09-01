@@ -26,15 +26,15 @@ def _check_easteregg_env() -> bool:
 def __getattr__(name: str):
 
     if name == "Console":
-        from .console import Console
+        from .blindwindow.console import Console
         return Console
 
     if name == "GuiStream":
-        from .streams import GuiStream
+        from .blindwindow.streams import GuiStream
         return GuiStream
 
     if name == "TeeStream":
-        from .streams import TeeStream
+        from .blindwindow.streams import TeeStream
         return TeeStream
 
         
