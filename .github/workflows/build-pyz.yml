@@ -26,7 +26,8 @@ jobs:
         run: uv sync --group dev
 
       - name: Build PYZ ZipApp
-        run: uv run mbu build shiv
+        run: uvx --from maxson-build-utils mbu build shiv
+        #run: uv run mbu build shiv
 
       - name: Publish PYZ to GitHub Release
         shell: bash

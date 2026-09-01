@@ -27,7 +27,8 @@ jobs:
           uv sync --group dev
 
       - name: Execute Onedir Compilation
-        run: uv run mbu build pyinstaller --mode onedir
+        #run: uv run mbu build pyinstaller --mode onedir
+        run: uvx --from maxson-build-utils mbu build pyinstaller --mode onedir
 
       - name: Upload Canonical Payload Artifact
         uses: actions/upload-artifact@v7
