@@ -6,6 +6,7 @@ import logging
 import pyhabitat
 import socket
 import threading
+import json
 
 from .textpane import TextPane
 from .streams import GuiStream, TeeStream
@@ -65,6 +66,8 @@ class BlindWindow(TextPane):
                 text = payload.get("text", "")
                 tag = payload.get("tag", "stdout")
 
+                logger.debug(f"[BlindWindow UDP Recv] tag={tag} | bytes={len(text)}")
+                
                 # Thread safety: Schedule write execution on Tkinter's main UI thread
                 self.after(0, self.append, text, tag)
             except socket.timeout:
