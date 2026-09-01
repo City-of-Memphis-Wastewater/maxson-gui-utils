@@ -3,7 +3,9 @@
 
 import re
 
-ANSI_PATTERN = re.compile(r"\x1b\\[[0-9;]*m")
+# Matches standard ANSI escape sequences (CSI sequences like \x1b[...m)
+ANSI_PATTERN = re.compile(r"\x1b\[[0-9;]*[a-zA-Z]")
+#ANSI_PATTERN = re.compile(r"\x1b\\[[0-9;]*m")
 
 def strip_ansi(text: str) -> str:
     """Remove ANSI escape sequences."""

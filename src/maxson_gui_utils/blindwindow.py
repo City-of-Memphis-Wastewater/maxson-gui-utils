@@ -26,6 +26,10 @@ def start_blindwindow() -> None:
         def __init__(self, master=None, **kwargs):
             super().__init__(master, **kwargs)
 
+            # Store original streams to restore on destroy
+            self._orig_stdout = sys.stdout
+            self._orig_stderr = sys.stderr
+
             self._set_icon()
 
             # Redirect stdout/stderr
@@ -38,6 +42,12 @@ def start_blindwindow() -> None:
             set_tk_iconphoto(root=top_level)
             if pyhabitat.on_windows():
                 set_tk_iconbitmap(root=top_level)
+
+        def destroy(self):
+            # Restore system streams prior to widget destruction
+            sys.stdout = self._orig_stdout
+            sys.stderr = self._orig_stderr
+            super().destroy()
 
     root = tk.Tk()
     root.title("BlindWindow")
