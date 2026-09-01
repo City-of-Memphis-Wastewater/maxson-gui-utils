@@ -9,6 +9,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [0.1.12] - 09-01-2026
 ### Changed:
 - BlindWindow refactor and console.Console exposure.
+- Move blindwindow elements to dedicated folder, for later spin out to blindwindow repo.
 
 ----
 
