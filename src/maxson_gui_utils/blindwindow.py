@@ -4,6 +4,8 @@ import sys
 import logging
 import pyhabitat
 
+from .tk_utils import set_tk_iconphoto, set_tk_iconbitmap
+
 logger = logging.getLogger(__name__)
 
 def start_blindwindow() -> None:
@@ -24,10 +26,18 @@ def start_blindwindow() -> None:
         def __init__(self, master=None, **kwargs):
             super().__init__(master, **kwargs)
 
+            self._set_icon()
+
             # Redirect stdout/stderr
             gui_stream = GuiStream(lambda text: self.append(strip_ansi(text)))
             sys.stdout = TeeStream(sys.stdout, gui_stream)
             sys.stderr = TeeStream(sys.stderr, gui_stream)
+
+        def _set_icon(self):
+            top_level = self.winfo_toplevel()
+            set_tk_iconphoto(root=top_level)
+            if pyhabitat.on_windows():
+                set_tk_iconbitmap(root=top_level)
 
     root = tk.Tk()
     root.title("BlindWindow")
