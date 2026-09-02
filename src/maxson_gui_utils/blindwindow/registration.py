@@ -205,7 +205,7 @@ def start_ipc_listener(
         _IPC_SERVER_THREADS.append(t_posix)
 
     # Don't let the caller proceed until the transport exists
-    if not ready.wait(timeout=5):
+    if not ready.wait(timeout=5): # this is not a robust mechanism to support a UDS-> UDP fallback. Ideally we have an IPCTransport abstraction with UDS ready, UDP ready, with transport configuration
         raise RuntimeError("IPC listener failed to become ready.")
     if error:
         raise RuntimeError("IPC listener failed to start") from error[0]
@@ -295,7 +295,7 @@ def _listen_posix_ipc(
             while not _IPC_STOP_EVENT.is_set():
                 try:
                     data, _ = sock.recvfrom(65536)
-                except socket.timout:
+                except socket.timeout:
                     continue
                 payload = json.loads(data.decode("utf-8"))
                 if isinstance(payload, dict) and "text" in payload:

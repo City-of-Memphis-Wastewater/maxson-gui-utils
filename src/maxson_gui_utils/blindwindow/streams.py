@@ -55,7 +55,6 @@ class SystemStreamWrapper:
     def __init__(self, target: Any, tag: str = "stdout") -> None:
         self.target = target
         self.tag = tag
-
     def write_defunct(self, text: str) -> int:
         res = len(text)
         if self.target:
