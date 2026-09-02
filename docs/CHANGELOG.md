@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [0.1.16] - 09-02-2026
+### Changed:
+- Add dedupe guard for routing streams and explicit console registration.
+- Support UDP and UDS for MacOS.
+
+---
+
 ## [0.1.15] - 09-01-2026
 ### Changed:
 - Add tk guard to cli.py blindwindow command.
