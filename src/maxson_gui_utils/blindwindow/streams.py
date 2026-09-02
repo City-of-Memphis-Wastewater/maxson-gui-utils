@@ -5,6 +5,11 @@ from typing import Callable, Optional, Any
 import sys
 from .registration import dispatch_write
 
+"""
+For external CLI tools like pdflinkcheck running in another terminal window, 
+set PYTHONUNBUFFERED=1 in your shell environment 
+or add install_stream_wrappers() at the entry point of those tools to guarantee real-time dispatching.
+"""
 class GuiStream:
     """
     File-like stream wrapper that routes write() calls to a callable.
@@ -44,18 +49,21 @@ class TeeStream:
             if hasattr(s, "flush"):
                 s.flush()
 
-
 class SystemStreamWrapper:
     """Wraps process-level sys.stdout or sys.stderr to route writes through dispatch_write."""
-    def __init__(self, target, tag: str = "stdout"):
+
+    def __init__(self, target: Any, tag: str = "stdout") -> None:
         self.target = target
         self.tag = tag
 
     def write(self, text: str) -> int:
+        res = len(text)
         if self.target:
-            self.target.write(text)
+            res = self.target.write(text)
+            if hasattr(self.target, "flush"):
+                self.target.flush()
         dispatch_write(text, tag=self.tag)
-        return len(text)
+        return res
 
     def flush(self) -> None:
         if self.target and hasattr(self.target, "flush"):
@@ -63,7 +71,7 @@ class SystemStreamWrapper:
 
     def isatty(self) -> bool:
         return getattr(self.target, "isatty", lambda: False)()
-
+    
 def install_stream_wrappers() -> None:
     """Redirect process-level sys.stdout and sys.stderr to broadcast via dispatch_write."""
     if not isinstance(sys.stdout, SystemStreamWrapper):
