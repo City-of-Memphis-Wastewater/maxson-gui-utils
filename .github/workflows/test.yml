@@ -1,6 +1,9 @@
 name: Run Tests
 
-on:
+#on:
+on: 
+  push:
+  pull_request:
   release:
     types: [published]
   workflow_dispatch:
@@ -8,3 +11,5 @@ on:
 jobs:
   test:
     uses: City-of-Memphis-Wastewater/maxson-build-utils/.github/workflows/reusable-test.yml@main
+
+
