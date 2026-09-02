@@ -1,7 +1,7 @@
 [project]
 name = "maxson-gui-utils"
 dynamic = ["version"]
-description = "A set of central utilities, primarily Tkinter-based, for use with the City of Memphis Wastewater stack."
+description = "A set of centralized utilities, theme assets, and icon assets, for GUI development with the City of Memphis Wastewater stack."
 readme = "README.md"
 requires-python = ">=3.9"
 
