@@ -59,8 +59,14 @@ def Console(
     else:
         out_stream = gui_stream
 
-    kwargs.setdefault("force_terminal", True)
-    kwargs.setdefault("color_system", "truecolor")
+    # Determine if target_sys is a real TTY before forcing terminal behavior
+    target_sys = sys.stderr if stderr else sys.stdout
+    is_tty = getattr(target_sys, "isatty", lambda: False)()
+
+    if "force_terminal" not in kwargs:
+        kwargs["force_terminal"] = is_tty
+
+    kwargs.setdefault("color_system", "truecolor" if is_tty else None)
 
     return DebugConsole(
         file=out_stream,

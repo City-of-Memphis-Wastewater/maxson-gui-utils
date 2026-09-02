@@ -13,9 +13,15 @@ class TextPane(ttk.Frame):
     Used by REPL, BlindWindow, and custom user GUI components.
     """
 
-    def __init__(self, master=None, auto_set_icon: bool = True, **kwargs):
+    def __init__(self, 
+                 master=None, 
+                 auto_set_icon: bool = True, 
+                 autoscroll: bool = True,
+                 **kwargs):
         super().__init__(master, **kwargs)
 
+        self.autoscroll = autoscroll
+        
         self.text_widget = tk.Text(
             self,
             wrap="word",

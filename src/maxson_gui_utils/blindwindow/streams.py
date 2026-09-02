@@ -71,12 +71,13 @@ class SystemStreamWrapper:
             res = self.target.write(text)
             if hasattr(self.target, "flush"):
                 self.target.flush()
-        
+
         # Only dispatch if this write didn't originate from our Console stream guard
         if not is_dispatch_suppressed():
             dispatch_write(text, tag=self.tag)
-            
+
         return res
+    
     def flush(self) -> None:
         if self.target and hasattr(self.target, "flush"):
             self.target.flush()

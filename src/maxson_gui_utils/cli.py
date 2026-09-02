@@ -12,6 +12,7 @@ import typer
 from typer.models import OptionInfo
 from rich.console import Console
 from typer_helptree import add_typer_helptree
+from typing import Optional
 
 from ._version import __version__
 from .context import APP_NAME, DESCRIPTION_STR
@@ -149,8 +150,8 @@ def placeholder(
     """Placeholder."""
     console_stderr.print(f"{path=}")
 
-@app.command(name="blindwindow")
-def blindwindow_command() -> None:
+@app.command(name="blindwindow_defunct")
+def blindwindow_command_defunct() -> None:
     """
     Launch BlindWindow to capture stdout/stderr in a GUI window.
     """
@@ -160,6 +161,27 @@ def blindwindow_command() -> None:
     from .blindwindow.blindwindow import start_blindwindow
     start_blindwindow()
 
+
+@app.command(name="blindwindow")
+def blindwindow_cmd(
+    title: str = typer.Option("BlindWindow Output", "--title", "-t", help="Custom window title bar text."),
+    port: Optional[int] = typer.Option(None, "--port", help="Port for UDP stream listeners."),
+    pipe_name: Optional[str] = typer.Option(None, "--pipe-name", help="Custom IPC Named Pipe or UDS path."),
+    always_on_top: bool = typer.Option(False, "--always-on-top", "--ontop", help="Keep window floating above other windows."),
+    autoscroll: bool = typer.Option(True, "--autoscroll/--no-autoscroll", help="Automatically scroll to the newest stream input."),
+) -> None:
+    """
+    Launch BlindWindow to capture stdout/stderr in a GUI window.
+    """
+    from .blindwindow.launcher import launch_blindwindow
+
+    launch_blindwindow(
+        title=title,
+        port=port,
+        pipe_name=pipe_name,
+        always_on_top=always_on_top,
+        autoscroll=autoscroll,
+    )
 
 @app.command(name="conweb")
 def _launch_configured_website(
