@@ -3,6 +3,7 @@
 from __future__ import annotations
 from typing import Callable, Optional, Any
 import sys
+from .ansi import strip_ansi
 from .registration import dispatch_write, is_dispatch_suppressed
 
 """
@@ -30,18 +31,19 @@ class GuiStream:
         pass
 
 
+
 class TeeStream:
-    """
-    Duplicates write() calls across multiple valid streams.
-    Ignores None streams (e.g. unattached sys.stdout in GUI mode).
-    """
+    """Duplicates writes. Automatically strips ANSI codes for non-TTY stream targets."""
 
     def __init__(self, *streams: Any):
         self.streams = [s for s in streams if s is not None]
 
     def write(self, text: str) -> int:
         for s in self.streams:
-            s.write(text)
+            is_tty = getattr(s, "isatty", lambda: False)()
+            output_text = text if is_tty else strip_ansi(text)
+            if output_text:
+                s.write(output_text)
         return len(text)
 
     def flush(self) -> None:

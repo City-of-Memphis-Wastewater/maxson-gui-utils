@@ -62,7 +62,7 @@ class BlindWindow(TextPane):
         unregister_listener(self._safe_append)
         super().destroy()
 
-
+''' # defunct in favor of .launcher
 def start_blindwindow(
     port: int | None = None,
     pipe_name: str | None = None,
@@ -97,7 +97,4 @@ def start_blindwindow(
         root.mainloop()
     except KeyboardInterrupt:
         logger.info("BlindWindow closed via KeyboardInterrupt.")
-
-
-if __name__ == "__main__":
-    start_blindwindow()
+'''

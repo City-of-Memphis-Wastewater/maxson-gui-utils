@@ -7,6 +7,7 @@ import logging
 import os
 import socket
 import sys
+import tempfile
 import threading
 from pathlib import Path
 from typing import Any, Callable, List, Optional
@@ -67,12 +68,14 @@ def unregister_listener(callback: Callable[[str, str], None]) -> None:
 # ---- Runtime Path Generators & Inter-Process Communication Helpers ----
 
 
+
 def get_uds_path() -> Path:
-    """Returns a cross-platform user runtime directory for Unix Domain Socket if needed."""
+    """Returns a short runtime path for POSIX Unix Domain Socket to satisfy macOS length limits."""
     if sys.platform == "win32":
         return Path(os.environ.get("LOCALAPPDATA", Path.home())) / "maxson_gui_ipc.sock"
-    return Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "maxson_gui_ipc.sock"
-
+    # macOS AF_UNIX paths cannot exceed 104 bytes; use /tmp directly on Darwin
+    base_dir = Path("/tmp") if sys.platform == "darwin" else Path(os.environ.get("XDG_RUNTIME_DIR", tempfile.gettempdir()))
+    return base_dir / "mgui.sock"
 
 def dispatch_write(
         text: str, 
@@ -93,7 +96,7 @@ def dispatch_write(
             try:
                 listener(clean_text, tag)
             except Exception as e:
-                logger.exception(f"UDS listener error: {e}")
+                logger.error("In-process listener dispatch failed: %s", e, exc_info=True)
         # Skip IPC broadcast if an in-process listener processed the write locally
         return
 
@@ -119,7 +122,7 @@ def _send_named_pipe(payload_dict: dict[str, str]) -> bool:
             conn.send(payload_dict)
         return True
     except Exception as e:
-        logger.exception(f"Named IPC pipe error: {e}")
+        logger.debug("Named pipe IPC connect attempt failed: %s", e)
         # Listener (BlindWindow) is not active or pipe is non-existent
         return False
 
@@ -136,7 +139,7 @@ def _send_uds(payload_dict: dict[str, str]) -> bool:
         sock.close()
         return True
     except Exception as e:
-        logger.exception(f"UDS send error: {e}")
+        logger.warning("UDS IPC send failed to %s: %s", uds_path, e)
         return False
 
 
@@ -152,8 +155,7 @@ def _send_udp(
         sock.sendto(payload, (IPC_HOST, port))
         sock.close()
     except Exception as e:
-        logger.exception(f"UDP send error: {e}")
-        logger.debug(f"UDP IPC send failed", exc_info=True)
+        logger.error("UDP IPC dispatch failed to %s:%d: %s", IPC_HOST, port, e, exc_info=True)
 
 # ---- Server / Listener Background Services ----
 
@@ -206,7 +208,8 @@ def start_ipc_listener(
 
     # Don't let the caller proceed until the transport exists
     if not ready.wait(timeout=5): # this is not a robust mechanism to support a UDS-> UDP fallback. Ideally we have an IPCTransport abstraction with UDS ready, UDP ready, with transport configuration
-        raise RuntimeError("IPC listener failed to become ready.")
+        logger.error("IPC listener timeout reached during startup.")
+        raise RuntimeError("IPC listener failed to become ready (within timeout).")
     if error:
         raise RuntimeError("IPC listener failed to start") from error[0]
 
@@ -228,8 +231,8 @@ def stop_ipc_listener() -> None:
     if uds_path.exists():
         try:
             uds_path.unlink()
-        except OSError:
-            pass
+        except OSError as e:
+            logger.debug("Failed to unlink socket at %s: %s", uds_path, e)
 
 
 def _listen_named_pipe(
@@ -258,12 +261,11 @@ def _listen_named_pipe(
                         break
                 conn.close()
             except Exception as e:
-                logger.exception(f"Named pipe listener error, conn: {e}")
-                pass
+                logger.error("Named pipe accept error: %s", e, exc_info=True)
         listener.close()
     except Exception as e:
-        logger.exception(f"Named pipe listener error, Listener: {e}")
-        pass
+        error.append(e)
+        ready.set()
 
 
 def _listen_posix_ipc(
@@ -288,42 +290,51 @@ def _listen_posix_ipc(
 
         with _SOCKET_LOCK:
             _ACTIVE_SOCKETS.append(sock)
-        logger.debug("IPC UDS listener ready: %s", uds_path)
+        logger.debug("IPC UDS listener bound and ready: %s", uds_path)
         # critical
         ready.set()
+
         try:
             while not _IPC_STOP_EVENT.is_set():
                 try:
                     data, _ = sock.recvfrom(65536)
                 except socket.timeout:
                     continue
-                payload = json.loads(data.decode("utf-8"))
-                if isinstance(payload, dict) and "text" in payload:
-                    text = payload["text"]
-                    tag = payload.get("tag", "stdout")
-                    callback(text, tag)
+                except Exception as e:
+                    logger.error("UDS socket receive error: %s", e)
+                    continue
+                try:
+                    payload = json.loads(data.decode("utf-8"))
+                    if isinstance(payload, dict) and "text" in payload:
+                        text = payload["text"]
+                        tag = payload.get("tag", "stdout")
+                        callback(text, tag)
+                except json.JSONDecodeError as e:
+                    logger.warning("Invalid JSON payload on UDS socket: %s", e)
+
         finally:
             with _SOCKET_LOCK:
                 if sock in _ACTIVE_SOCKETS:
                     _ACTIVE_SOCKETS.remove(sock)
             sock.close()
-            try:
-                uds_path.unlink()
-            except OSError:
-                pass
+            if uds_path.exists():
+                try:
+                    uds_path.unlink()
+                except OSError:
+                    pass
     except Exception as e:
         error.append(e)
-        logger.exception(f"POSIX listener loop error, fallback to UDP listener loop if UDS socket creation or binding fails: {e}")
+        logger.warning("UDS listener binding failed (%s). Falling back to UDP loopback.", e)
         # Fallback to UDP listener loop if UDS socket creation or binding fails
         _listen_udp(callback, port, ready, error)
 
 
 def _listen_udp(
-        callback: Callable[[str, str], None], 
-        port: int,
-        ready: threading.Event,
-        error: list[BaseException],
-        ) -> None:
+    callback: Callable[[str, str], None], 
+    port: int,
+    ready: threading.Event,
+    error: list[BaseException],
+) -> None:
     """UDP Loopback Listener Loop."""
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -333,26 +344,32 @@ def _listen_udp(
 
         with _SOCKET_LOCK:
             _ACTIVE_SOCKETS.append(sock)
-        logger.debug("IPC UDP listener ready: %s:%d", IPC_HOST,port)
+        logger.info("IPC UDP listener ready on %s:%d", IPC_HOST, port)
         ready.set()
+
         try:
             while not _IPC_STOP_EVENT.is_set():
                 try:
                     data, _ = sock.recvfrom(65536)
                 except socket.timeout:
                     continue
+                except Exception as e:
+                    logger.error("UDP socket receive error: %s", e)
+                    continue
 
-                payload = json.loads(data.decode("utf-8"))
-                if isinstance(payload, dict) and "text" in payload:
-                    text = payload["text"]
-                    tag = payload.get("tag", "stdout")
-                    callback(text, tag)
+                try:
+                    payload = json.loads(data.decode("utf-8"))
+                    if isinstance(payload, dict) and "text" in payload:
+                        callback(payload["text"], payload.get("tag", "stdout"))
+                except json.JSONDecodeError as e:
+                    logger.warning("Invalid JSON payload on UDP socket: %s", e)
+
         finally:
             with _SOCKET_LOCK:
                 if sock in _ACTIVE_SOCKETS:
                     _ACTIVE_SOCKETS.remove(sock)
             sock.close()
     except Exception as e:
+        logger.error("Fatal error starting UDP listener on port %d: %s", port, e, exc_info=True)
         error.append(e)
-        logger.exception(f"UDP listener loop error, complete failure: {e}")
-        pass
+        ready.set()

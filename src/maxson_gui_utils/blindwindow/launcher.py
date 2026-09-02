@@ -5,7 +5,7 @@ import logging
 import sys
 from typing import Optional
 
-from .registration import register_listener, start_ipc_listener
+from .registration import register_listener, start_ipc_listener, stop_ipc_listener
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,12 @@ def launch_blindwindow(
     Instantiates and starts the BlindWindow Tkinter interface and
     attaches stream listeners across in-process dispatches and IPC sockets.
     """
+    import pyhabitat
+
+    if not pyhabitat.tkinter_is_available():
+        logger.error("Cannot launch BlindWindow: Tkinter is not available in this Python environment.")
+        sys.exit(1)
+
     import tkinter as tk
     from .blindwindow import BlindWindow
     # 1. Guard against headless environments without a display server
@@ -40,27 +46,37 @@ def launch_blindwindow(
     app.pack(fill="both", expand=True)
 
     # 4. Attach local in-process dispatch listener
-    def _in_process_receiver(text: str, tag: str = "stdout") -> None:
+    def _receiver(text: str, tag: str = "stdout") -> None:
         root.after_idle(lambda: app.append(text, tag=tag))
 
-    register_listener(_in_process_receiver)
+    register_listener(_receiver)
+
+    
 
     # 5. Spin up cross-process IPC socket/pipe server
-    start_ipc_listener(
-        callback=_in_process_receiver,
-        port=port,
-        pipe_name=pipe_name,
-    )
+    try:
+        start_ipc_listener(
+            callback=_receiver,
+            port=port,
+            pipe_name=pipe_name,
+        )
+    except RuntimeError as err:
+        logger.critical("Failed to initialize BlindWindow IPC server: %s", err)
+        root.destroy()
+        sys.exit(1)
 
     def _on_close() -> None:
+        stop_ipc_listener()
         root.destroy()
 
     root.protocol("WM_DELETE_WINDOW", _on_close)
-
-    logger.debug(f"BlindWindow launched with title='{title}', port={port}, pipe={pipe_name}")
-
+    logger.info("BlindWindow interface initialized successfully.")
+    
     # 6. Hand control over to Tkinter event loop
     try:
         root.mainloop()
     except KeyboardInterrupt:
         logger.info("BlindWindow closed via KeyboardInterrupt.")
+
+if __name__ == "__main__":
+    launch_blindwindow()
