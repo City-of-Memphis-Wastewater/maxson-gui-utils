@@ -74,7 +74,12 @@ def get_uds_path() -> Path:
     return Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "maxson_gui_ipc.sock"
 
 
-def dispatch_write(text: str, tag: str = "stdout") -> None:
+def dispatch_write(
+        text: str, 
+        tag: str = "stdout",
+        *,
+        port:int = IPC_PORT,
+        ) -> None:
     """Dispatches text chunks to in-process listeners and broadcasts via cross-platform IPC."""
 
     # 0. Always clean text before dispatching to listeners/IPC
@@ -98,11 +103,11 @@ def dispatch_write(text: str, tag: str = "stdout") -> None:
     # If running on native Windows (non-WSL), try Named Pipe first; fall back to UDP loopback
     if sys.platform == "win32":
         if not _send_named_pipe(payload_dict):
-            _send_udp(payload_dict)
+            _send_udp(payload_dict,port)
     else:
         # Try Unix Domain Socket first (macOS / Linux); fall back to UDP loopback
         if not _send_uds(payload_dict):
-            _send_udp(payload_dict)
+            _send_udp(payload_dict,port)
 
 
 def _send_named_pipe(payload_dict: dict[str, str]) -> bool:
@@ -135,18 +140,20 @@ def _send_uds(payload_dict: dict[str, str]) -> bool:
         return False
 
 
-def _send_udp(payload_dict: dict[str, str]) -> None:
+def _send_udp(
+        payload_dict: dict[str, str],
+        port: int = IPC_PORT,
+        ) -> None:
     """POSIX/Windows fallback IPC using UDP loopback socket."""
     try:
         payload = json.dumps(payload_dict).encode("utf-8")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(0.0)
-        sock.sendto(payload, (IPC_HOST, IPC_PORT))
+        sock.sendto(payload, (IPC_HOST, port))
         sock.close()
     except Exception as e:
         logger.exception(f"UDP send error: {e}")
-        pass
-
+        logger.debug(f"UDP IPC send failed", exc_info=True)
 
 # ---- Server / Listener Background Services ----
 
@@ -191,7 +198,7 @@ def start_ipc_listener(
         t_posix = threading.Thread(
             target=_listen_posix_ipc,
             args=(callback, target_port, ready, error),
-            daemon=True,
+            daemon=True, 
             name="IPC-POSIX-Listener",
         )
         t_posix.start()
@@ -225,7 +232,12 @@ def stop_ipc_listener() -> None:
             pass
 
 
-def _listen_named_pipe(callback: Callable[[str, str], None], pipe_name: str) -> None:
+def _listen_named_pipe(
+        callback: Callable[[str, str], None], 
+        pipe_name: str,
+        ready: threading.Event,
+        error: list[BaseException],
+        ) -> None:
     """Windows Named Pipe Listener Loop."""
     from multiprocessing.connection import Listener
 
@@ -254,13 +266,19 @@ def _listen_named_pipe(callback: Callable[[str, str], None], pipe_name: str) -> 
         pass
 
 
-def _listen_posix_ipc(callback: Callable[[str, str], None], port: int) -> None:
+def _listen_posix_ipc(
+        callback: Callable[[str, str], None], 
+        port: int,
+        ready: threading.Event,
+        error: list[BaseException],
+        ) -> None:
     """POSIX Listener Loop: Binds Unix Domain Socket first, falls back to UDP loopback."""
     uds_path = get_uds_path()
     if uds_path.exists():
         try:
             uds_path.unlink()
-        except OSError:
+        except OSError as e:
+            logger.debug("Could not remove stale UDS %s: %s", uds_path, e)
             pass
 
     try:
@@ -270,39 +288,42 @@ def _listen_posix_ipc(callback: Callable[[str, str], None], port: int) -> None:
 
         with _SOCKET_LOCK:
             _ACTIVE_SOCKETS.append(sock)
-
+        logger.debug("IPC UDS listener ready: %s", uds_path)
+        # critical
+        ready.set()
         try:
             while not _IPC_STOP_EVENT.is_set():
                 try:
                     data, _ = sock.recvfrom(65536)
-                    if data:
-                        payload = json.loads(data.decode("utf-8"))
-                        if isinstance(payload, dict) and "text" in payload:
-                            text = payload["text"]
-                            tag = payload.get("tag", "stdout")
-                            callback(text, tag)
-                except socket.timeout:
+                except socket.timout:
                     continue
-                except Exception as e:
-                    logger.exception(f"POSIX listener loop error: {e}")
-                    pass
+                payload = json.loads(data.decode("utf-8"))
+                if isinstance(payload, dict) and "text" in payload:
+                    text = payload["text"]
+                    tag = payload.get("tag", "stdout")
+                    callback(text, tag)
         finally:
             with _SOCKET_LOCK:
                 if sock in _ACTIVE_SOCKETS:
                     _ACTIVE_SOCKETS.remove(sock)
             sock.close()
-            if uds_path.exists():
-                try:
-                    uds_path.unlink()
-                except OSError:
-                    pass
+            try:
+                uds_path.unlink()
+            except OSError:
+                pass
     except Exception as e:
+        error.append(e)
         logger.exception(f"POSIX listener loop error, fallback to UDP listener loop if UDS socket creation or binding fails: {e}")
         # Fallback to UDP listener loop if UDS socket creation or binding fails
-        _listen_udp(callback, port)
+        _listen_udp(callback, port, ready, error)
 
 
-def _listen_udp(callback: Callable[[str, str], None], port: int) -> None:
+def _listen_udp(
+        callback: Callable[[str, str], None], 
+        port: int,
+        ready: threading.Event,
+        error: list[BaseException],
+        ) -> None:
     """UDP Loopback Listener Loop."""
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -312,27 +333,26 @@ def _listen_udp(callback: Callable[[str, str], None], port: int) -> None:
 
         with _SOCKET_LOCK:
             _ACTIVE_SOCKETS.append(sock)
-
+        logger.debug("IPC UDP listener ready: %s:%d", IPC_HOST,port)
+        ready.set()
         try:
             while not _IPC_STOP_EVENT.is_set():
                 try:
                     data, _ = sock.recvfrom(65536)
-                    if data:
-                        payload = json.loads(data.decode("utf-8"))
-                        if isinstance(payload, dict) and "text" in payload:
-                            text = payload["text"]
-                            tag = payload.get("tag", "stdout")
-                            callback(text, tag)
                 except socket.timeout:
                     continue
-                except Exception as e:
-                    logger.exception(f"UDP listener loop error, to safe closure: {e}")
-                    pass
+
+                payload = json.loads(data.decode("utf-8"))
+                if isinstance(payload, dict) and "text" in payload:
+                    text = payload["text"]
+                    tag = payload.get("tag", "stdout")
+                    callback(text, tag)
         finally:
             with _SOCKET_LOCK:
                 if sock in _ACTIVE_SOCKETS:
                     _ACTIVE_SOCKETS.remove(sock)
             sock.close()
     except Exception as e:
+        error.append(e)
         logger.exception(f"UDP listener loop error, complete failure: {e}")
         pass
