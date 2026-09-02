@@ -35,19 +35,19 @@ def get_uds_path() -> Path:
         return Path(os.environ.get("LOCALAPPDATA", Path.home())) / "maxson_gui_ipc.sock"
     return Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "maxson_gui_ipc.sock"
 
-
-def _send_uds(payload_dict: dict) -> None:
+def _send_uds(payload_dict: dict) -> bool:
     """POSIX IPC via Unix Domain Socket (macOS / Linux)."""
     uds_path = get_uds_path()
     if not uds_path.exists():
-        return
+        return False
     try:
         payload = json.dumps(payload_dict).encode("utf-8")
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         sock.sendto(payload, str(uds_path))
         sock.close()
+        return True
     except Exception:
-        pass
+        return False
     
 def dispatch_write(text: str, tag: str = "stdout") -> None:
     """Dispatches text chunks to in-process listeners and broadcasts via cross-platform IPC."""
@@ -66,8 +66,9 @@ def dispatch_write(text: str, tag: str = "stdout") -> None:
         if not _send_named_pipe(payload_dict):
             _send_udp(payload_dict)
     else:
-        # Running in WSL or Linux: UDP crosses the WSL2/Windows host boundary cleanly
-        _send_udp(payload_dict)
+        # Try Unix Domain Socket first (macOS / Linux); fallback to UDP
+        if not _send_uds(payload_dict):
+            _send_udp(payload_dict)
         
 
 def _send_named_pipe(payload_dict: dict) -> None:

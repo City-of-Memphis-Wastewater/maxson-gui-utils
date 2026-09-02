@@ -54,7 +54,7 @@ class BlindWindow(TextPane):
         if sys.platform == "win32":
             self._listen_named_pipe()
         else:
-            self._listen_udp()
+            self._listen_uds()
 
     def _listen_named_pipe(self) -> None:
         """Windows Named Pipe Listener Loop."""
