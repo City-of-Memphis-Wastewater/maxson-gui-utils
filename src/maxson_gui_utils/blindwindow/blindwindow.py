@@ -17,6 +17,7 @@ from .registration import (
     PIPE_NAME,
     register_listener,
     unregister_listener,
+    get_uds_path,
 )
 from .streams import GuiStream, TeeStream
 
@@ -109,6 +110,46 @@ class BlindWindow(TextPane):
                     continue
         except Exception as e:
             logger.warning(f"Failed to bind UDP IPC server on port {IPC_PORT}: {e}")
+
+    def _listen_uds(self) -> None:
+        """POSIX UDS Listener for macOS and Linux."""
+        from pathlib import Path
+        uds_path = get_uds_path()
+        
+        if uds_path.exists():
+            try:
+                uds_path.unlink()
+            except OSError:
+                pass
+
+        self._ipc_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        try:
+            self._ipc_socket.bind(str(uds_path))
+            self._ipc_socket.settimeout(1.0)
+            
+            while self._ipc_running:
+                try:
+                    data, _ = self._ipc_socket.recvfrom(65535)
+                    if not data:
+                        continue
+                    payload = json.loads(data.decode("utf-8"))
+                    text = payload.get("text", "")
+                    tag = payload.get("tag", "stdout")
+                    
+                    clean_text = strip_ansi(text)
+                    self.after(0, self.append, clean_text, tag)
+                except socket.timeout:
+                    continue
+                except Exception as e:
+                    logger.debug(f"UDS socket read error: {e}")
+        except Exception as e:
+            logger.warning(f"Failed to bind UDS IPC listener at {uds_path}: {e}")
+        finally:
+            if uds_path.exists():
+                try:
+                    uds_path.unlink()
+                except OSError:
+                    pass
 
     def destroy(self):
         """Clean up process I/O streams, unregister listeners, and stop IPC thread."""

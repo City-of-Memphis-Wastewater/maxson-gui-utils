@@ -5,6 +5,8 @@ import sys
 import json
 import socket
 from typing import Any, Callable, List
+import os
+from pathlib import Path
 
 # Active in-process listeners: callback(text: str, tag: str)
 _LISTENERS: List[Callable[[str, str], None]] = []
@@ -32,6 +34,20 @@ def get_uds_path() -> Path:
     if sys.platform == "win32":
         return Path(os.environ.get("LOCALAPPDATA", Path.home())) / "maxson_gui_ipc.sock"
     return Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "maxson_gui_ipc.sock"
+
+
+def _send_uds(payload_dict: dict) -> None:
+    """POSIX IPC via Unix Domain Socket (macOS / Linux)."""
+    uds_path = get_uds_path()
+    if not uds_path.exists():
+        return
+    try:
+        payload = json.dumps(payload_dict).encode("utf-8")
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        sock.sendto(payload, str(uds_path))
+        sock.close()
+    except Exception:
+        pass
     
 def dispatch_write(text: str, tag: str = "stdout") -> None:
     """Dispatches text chunks to in-process listeners and broadcasts via cross-platform IPC."""
