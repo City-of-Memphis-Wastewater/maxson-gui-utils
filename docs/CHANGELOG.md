@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [0.1.15] - 09-01-2026
+### Changed:
+- Add tk guard to cli.py blindwindow command.
+
+---
+
 ## [0.1.14] - 09-01-2026
 ### Changed:
 - In github runners, use but do not depend on mbu in pyproject.toml
