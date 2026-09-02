@@ -10,6 +10,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Changed:
 - Add dedupe guard for routing streams and explicit console registration.
 - Support UDP and UDS for MacOS.
+- Refactor and add launcher.py to support CLI flags for blindwindow command.
 
 ---
 
