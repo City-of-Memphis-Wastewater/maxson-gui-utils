@@ -6,9 +6,10 @@ from __future__ import annotations
 import logging
 import sys
 from typing import Any, Optional
+import pyhabitat
 from rich.console import Console as RichConsole
 
-from .registration import dispatch_write
+from .registration import dispatch_write, suppress_stream_wrapper_dispatch
 from .streams import GuiStream, TeeStream
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ class DebugConsole(RichConsole):
 def Console(
     stderr: bool = False,
     tag: Optional[str] = None,
-    tee_sys: bool = True,
+    tee_sys: Optional[bool] = None,
     debug_stream: bool = False,
     **kwargs: Any,
 ) -> RichConsole:
@@ -41,11 +42,14 @@ def Console(
     Directs output to active maxson-gui-utils listeners with Tkinter tag metadata.
     """
     resolved_tag = tag if tag is not None else ("stderr" if stderr else "stdout")
-
+    if tee_sys is None:
+        tee_sys = determine_tee_sys()
     def _debug_dispatch(text: str, tag: str = resolved_tag) -> None:
         if debug_stream:
             logger.debug(f"[Stream Dispatch] tag={tag} | bytes={len(text)} | text={text!r}")
-        dispatch_write(text, tag=tag)
+        # Suppress downstream SystemStreamWrapper from double-dispatching when TeeStream hits sys.stdout
+        with suppress_stream_wrapper_dispatch():
+            dispatch_write(text, tag=tag)
 
     gui_stream = GuiStream(_debug_dispatch, tag=resolved_tag)
 
@@ -63,3 +67,8 @@ def Console(
         stderr=stderr,
         **kwargs,
     )
+
+def determine_tee_sys():
+    if pyhabitat.is_msix():
+        return False
+    return True

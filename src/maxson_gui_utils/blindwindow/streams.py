@@ -3,7 +3,7 @@
 from __future__ import annotations
 from typing import Callable, Optional, Any
 import sys
-from .registration import dispatch_write
+from .registration import dispatch_write, is_dispatch_suppressed
 
 """
 For external CLI tools like pdflinkcheck running in another terminal window, 
@@ -56,7 +56,7 @@ class SystemStreamWrapper:
         self.target = target
         self.tag = tag
 
-    def write(self, text: str) -> int:
+    def write_defunct(self, text: str) -> int:
         res = len(text)
         if self.target:
             res = self.target.write(text)
@@ -64,7 +64,19 @@ class SystemStreamWrapper:
                 self.target.flush()
         dispatch_write(text, tag=self.tag)
         return res
-
+    
+    def write(self, text: str) -> int:
+        res = 0
+        if self.target:
+            res = self.target.write(text)
+            if hasattr(self.target, "flush"):
+                self.target.flush()
+        
+        # Only dispatch if this write didn't originate from our Console stream guard
+        if not is_dispatch_suppressed():
+            dispatch_write(text, tag=self.tag)
+            
+        return res
     def flush(self) -> None:
         if self.target and hasattr(self.target, "flush"):
             self.target.flush()

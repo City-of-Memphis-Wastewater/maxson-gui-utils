@@ -7,6 +7,9 @@ import socket
 from typing import Any, Callable, List
 import os
 from pathlib import Path
+import threading
+
+_DISPATCH_GUARD = threading.local()
 
 # Active in-process listeners: callback(text: str, tag: str)
 _LISTENERS: List[Callable[[str, str], None]] = []
@@ -15,11 +18,31 @@ IPC_HOST = "127.0.0.1"
 IPC_PORT = 9999
 PIPE_NAME = r"\\.\pipe\maxson_gui_utils_ipc"
 
+class suppress_stream_wrapper_dispatch:
+    """
+    Context manager to suppress SystemStreamWrapper dispatch when Console already dispatched.
+    Behavioral scope control block, ergo PEP8 PascalCase is not used.
+    """
+    def __enter__(self):
+        depth = getattr(_DISPATCH_GUARD, "depth", 0)
+        _DISPATCH_GUARD.depth = depth + 1
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        depth = getattr(_DISPATCH_GUARD, "depth", 1)
+        _DISPATCH_GUARD.depth = max(0, depth - 1)
+
+def is_dispatch_suppressed() -> bool:
+    return getattr(_DISPATCH_GUARD, "depth", 0) > 0
+
+#def is_dispatch_suppressed() -> bool:
+#    return getattr(_DISPATCH_GUARD, "active", False)
+
+
 def register_listener(callback: Callable[[str, str], None]) -> None:
     """Registers a pane callback (e.g. TextPane.append) to receive console outputs."""
     if callback not in _LISTENERS:
         _LISTENERS.append(callback)
-
 
 def unregister_listener(callback: Callable[[str, str], None]) -> None:
     """Removes a pane callback from global listeners."""
