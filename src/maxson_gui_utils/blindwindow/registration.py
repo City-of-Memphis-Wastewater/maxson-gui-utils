@@ -87,8 +87,8 @@ def dispatch_write(text: str, tag: str = "stdout") -> None:
         for listener in list(_LISTENERS):
             try:
                 listener(clean_text, tag)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.exception(f"UDS listener error: {e}")
         # Skip IPC broadcast if an in-process listener processed the write locally
         return
 
@@ -113,7 +113,8 @@ def _send_named_pipe(payload_dict: dict[str, str]) -> bool:
         with Client(PIPE_NAME, family="AF_PIPE") as conn:
             conn.send(payload_dict)
         return True
-    except Exception:
+    except Exception as e:
+        logger.exception(f"Named IPC pipe error: {e}")
         # Listener (BlindWindow) is not active or pipe is non-existent
         return False
 
@@ -129,7 +130,8 @@ def _send_uds(payload_dict: dict[str, str]) -> bool:
         sock.sendto(payload, str(uds_path))
         sock.close()
         return True
-    except Exception:
+    except Exception as e:
+        logger.exception(f"UDS send error: {e}")
         return False
 
 
@@ -141,7 +143,8 @@ def _send_udp(payload_dict: dict[str, str]) -> None:
         sock.settimeout(0.0)
         sock.sendto(payload, (IPC_HOST, IPC_PORT))
         sock.close()
-    except Exception:
+    except Exception as e:
+        logger.exception(f"UDP send error: {e}")
         pass
 
 
@@ -154,6 +157,7 @@ def start_ipc_listener(
     pipe_name: Optional[str] = None,
 ) -> None:
     """
+    Start the IPC listener and do not return until the listener has successfully boud its transport.
     Spawns background daemon thread(s) listening for cross-process IPC output chunks.
     Routes received payload dicts ({"text": ..., "tag": ...}) to the provided callback.
     """
@@ -161,10 +165,13 @@ def start_ipc_listener(
     target_port = port if port is not None else IPC_PORT
     target_pipe = pipe_name if pipe_name is not None else PIPE_NAME
 
+    ready = threading.Event()
+    error: list[BaseException] = []
+
     if sys.platform == "win32":
         t_pipe = threading.Thread(
             target=_listen_named_pipe,
-            args=(callback, target_pipe),
+            args=(callback, target_pipe, ready, error),
             daemon=True,
             name="IPC-NamedPipe-Listener",
         )
@@ -173,7 +180,7 @@ def start_ipc_listener(
 
         t_udp = threading.Thread(
             target=_listen_udp,
-            args=(callback, target_port),
+            args=(callback, target_port, ready, error),
             daemon=True,
             name="IPC-UDP-Listener",
         )
@@ -183,12 +190,18 @@ def start_ipc_listener(
         # On POSIX systems, spawn UDS listener with automatic fallback to UDP if socket binding fails
         t_posix = threading.Thread(
             target=_listen_posix_ipc,
-            args=(callback, target_port),
+            args=(callback, target_port, ready, error),
             daemon=True,
             name="IPC-POSIX-Listener",
         )
         t_posix.start()
         _IPC_SERVER_THREADS.append(t_posix)
+
+    # Don't let the caller proceed until the transport exists
+    if not ready.wait(timeout=5):
+        raise RuntimeError("IPC listener failed to become ready.")
+    if error:
+        raise RuntimeError("IPC listener failed to start") from error[0]
 
 
 def stop_ipc_listener() -> None:
@@ -199,7 +212,8 @@ def stop_ipc_listener() -> None:
         for sock in _ACTIVE_SOCKETS:
             try:
                 sock.close()
-            except Exception:
+            except Exception as e:
+                logger.exception(f"IPC listener termination error: {e}")
                 pass
         _ACTIVE_SOCKETS.clear()
 
@@ -231,10 +245,12 @@ def _listen_named_pipe(callback: Callable[[str, str], None], pipe_name: str) -> 
                     except EOFError:
                         break
                 conn.close()
-            except Exception:
+            except Exception as e:
+                logger.exception(f"Named pipe listener error, conn: {e}")
                 pass
         listener.close()
-    except Exception:
+    except Exception as e:
+        logger.exception(f"Named pipe listener error, Listener: {e}")
         pass
 
 
@@ -267,7 +283,8 @@ def _listen_posix_ipc(callback: Callable[[str, str], None], port: int) -> None:
                             callback(text, tag)
                 except socket.timeout:
                     continue
-                except Exception:
+                except Exception as e:
+                    logger.exception(f"POSIX listener loop error: {e}")
                     pass
         finally:
             with _SOCKET_LOCK:
@@ -279,7 +296,8 @@ def _listen_posix_ipc(callback: Callable[[str, str], None], port: int) -> None:
                     uds_path.unlink()
                 except OSError:
                     pass
-    except Exception:
+    except Exception as e:
+        logger.exception(f"POSIX listener loop error, fallback to UDP listener loop if UDS socket creation or binding fails: {e}")
         # Fallback to UDP listener loop if UDS socket creation or binding fails
         _listen_udp(callback, port)
 
@@ -307,12 +325,14 @@ def _listen_udp(callback: Callable[[str, str], None], port: int) -> None:
                             callback(text, tag)
                 except socket.timeout:
                     continue
-                except Exception:
+                except Exception as e:
+                    logger.exception(f"UDP listener loop error, to safe closure: {e}")
                     pass
         finally:
             with _SOCKET_LOCK:
                 if sock in _ACTIVE_SOCKETS:
                     _ACTIVE_SOCKETS.remove(sock)
             sock.close()
-    except Exception:
+    except Exception as e:
+        logger.exception(f"UDP listener loop error, complete failure: {e}")
         pass
