@@ -173,6 +173,9 @@ def blindwindow_cmd(
     """
     Launch BlindWindow to capture stdout/stderr in a GUI window.
     """
+    if not pyhabitat.tkinter_is_available():
+        logger.error("BlindWindow requires Tkinter, not available in this environment.")
+        return
     from .blindwindow.launcher import launch_blindwindow
 
     launch_blindwindow(
