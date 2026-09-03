@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+### Internal
+- MacOS blindwindow support is failing. But the primary purpose is MSIX.
+- slice out to /blindwindow repo.
+
+---
+
 ## [0.1.16] - 09-02-2026
 ### Changed:
 - Add dedupe guard for routing streams and explicit console registration.
