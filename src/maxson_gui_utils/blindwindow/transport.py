@@ -1,10 +1,12 @@
 # src/blindwidow/transport.py
 from __future__ import annotations
+from pathlib import Path
+from enum import Enum
 
-BUFFER_PATH = Path.home() / ".blindwindow" / "buffer"
+SPOOL_PATH = Path.home() / ".blindwindow" / "spool" # append only event stream
 
 class IPCTransport(str, Enum):
     UDS = "uds"
     UDP = "udp"
     NAMED_PIPE = "named-pipe"
-    BUFFER_FILE = "buffer-file"
+    SPOOL_FILE = "spool-file"
