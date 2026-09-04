@@ -10,6 +10,7 @@ __all__ = [
     "Console",
     "TeeStream",
     "GuiStream",
+    "install_stream_wrappers",
 ]
 
 
@@ -29,6 +30,10 @@ def __getattr__(name: str):
     if name == "TeeStream":
         from .streams import TeeStream
         return TeeStream
+
+    if name == "install_stream_wrappers":
+        from .streams import install_stream_wrappers
+        return install_stream_wrappers
 
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
