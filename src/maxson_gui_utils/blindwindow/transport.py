@@ -1,3 +1,6 @@
+# src/blindwidow/transport.py
+from __future__ import annotations
+
 class IPCTransport(str, Enum):
     UDS = "uds"
     UDP = "udp"
