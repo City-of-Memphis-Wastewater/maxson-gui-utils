@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import Any, Callable, List, Optional
 
 from .ansi import strip_ansi
+from .spool import write_record as write_record_to_spool
+from .transport import IPCTransport
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +87,7 @@ def dispatch_write(
     tag: str = "stdout",
     *,
     port: int = IPC_PORT,
+    transport: IPCTransport = IPCTransport.UDS,
 ) -> None:
     """Dispatches text chunks to in-process listeners and broadcasts via cross-platform IPC."""
     clean_text = strip_ansi(text)
@@ -103,14 +106,25 @@ def dispatch_write(
     # 2. Cross-process IPC dispatch (fire-and-forget for external subshells / CLI processes)
     payload_dict = {"text": clean_text, "tag": tag}
 
-    if sys.platform == "win32":
+    '''if sys.platform == "win32":
         if not _send_named_pipe(payload_dict):
             _send_udp(payload_dict, port)
     else:
         if not _send_uds(payload_dict):
             _send_udp(payload_dict, port)
+    '''
+    if transport is IPCTransport.SPOOL_FILE:
+        write_record_to_spool(clean_text, tag)
 
+    elif transport is IPCTransport.UDS:
+        _send_uds(payload_dict)
 
+    elif transport is IPCTransport.UDP:
+        _send_udp(payload_dict, port)
+
+    elif transport is IPCTransport.NAMED_PIPE:
+        _send_named_pipe(payload_dict)
+        
 def _send_named_pipe(payload_dict: dict[str, str]) -> bool:
     """Windows-safe IPC using Named Pipes (bypasses Windows Firewall / MSIX warnings)."""
     try:
@@ -183,6 +197,7 @@ def start_ipc_listener(
     callback: Callable[[str, str], None],
     port: Optional[int] = None,
     pipe_name: Optional[str] = None,
+    transport: Optional[IPCTransport]=None,
 ) -> None:
     """
     Starts the IPC listener and blocks until the transport is bound and listening.
@@ -195,6 +210,22 @@ def start_ipc_listener(
     ready = threading.Event()
     error: list[BaseException] = []
 
+    '''
+    # target  architecture
+    if transport is IPCTransport.SPOOL_FILE:
+        start_spool_listener(callback)
+
+    elif transport is IPCTransport.UDS:
+        start_uds_listener(callback)
+
+    elif transport is IPCTransport.UDP:
+        start_udp_listener(callback)
+
+    elif transport is IPCTransport.NAMED_PIPE:
+        start_named_pipe_listener(callback)
+    '''
+
+    # Existing architecture
     if sys.platform == "win32":
         t_pipe = threading.Thread(
             target=_listen_named_pipe,
@@ -210,7 +241,7 @@ def start_ipc_listener(
             args=(callback, target_port, ready, error),
             daemon=True,
             name="IPC-UDP-Listener",
-        )
+         )
         t_udp.start()
         _IPC_SERVER_THREADS.append(t_udp)
     else:
