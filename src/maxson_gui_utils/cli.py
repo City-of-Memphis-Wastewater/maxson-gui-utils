@@ -146,8 +146,8 @@ def gui_command(
 @app.command(name="blindwindow")
 def blindwindow_cmd(
     title: str = typer.Option("BlindWindow Output", "--title", "-t", help="Custom window title bar text."),
-    port: Optional[int] = typer.Option(None, "--port", help="Port for UDP stream listeners."),
-    pipe_name: Optional[str] = typer.Option(None, "--pipe-name", help="Custom IPC Named Pipe or UDS path."),
+    #port: Optional[int] = typer.Option(None, "--port", help="Port for UDP stream listeners."),
+    #pipe_name: Optional[str] = typer.Option(None, "--pipe-name", help="Custom IPC Named Pipe or UDS path."),
     always_on_top: bool = typer.Option(False, "--always-on-top", "--ontop", help="Keep window floating above other windows."),
     autoscroll: bool = typer.Option(True, "--autoscroll/--no-autoscroll", help="Automatically scroll to the newest stream input."),
 ) -> None:
@@ -161,8 +161,8 @@ def blindwindow_cmd(
 
     launch_blindwindow(
         title=title,
-        port=port,
-        pipe_name=pipe_name,
+        #port=port,
+        #pipe_name=pipe_name,
         always_on_top=always_on_top,
         autoscroll=autoscroll,
     )
