@@ -6,7 +6,7 @@ import sys
 from typing import Optional
 
 from .registration import register_listener, start_ipc_listener, stop_ipc_listener
-
+from .transport import IPCTransport
 logger = logging.getLogger(__name__)
 
 
@@ -55,10 +55,14 @@ def launch_blindwindow(
 
     # 5. Spin up cross-process IPC socket/pipe server
     try:
+        #start_ipc_listener(
+        #    callback=_receiver,
+        #    port=port,
+        #    pipe_name=pipe_name,
+        #)
         start_ipc_listener(
-            callback=_receiver,
-            port=port,
-            pipe_name=pipe_name,
+            callback=app._safe_append,
+            transport=IPCTransport.SPOOL_FILE,
         )
     except RuntimeError as err:
         logger.critical("Failed to initialize BlindWindow IPC server: %s", err)

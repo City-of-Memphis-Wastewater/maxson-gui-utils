@@ -11,8 +11,6 @@ from .ansi import strip_ansi
 from .registration import (
     register_listener,
     unregister_listener,
-    start_ipc_listener,
-    stop_ipc_listener,
 )
 from .streams import GuiStream, TeeStream
 
@@ -62,39 +60,3 @@ class BlindWindow(TextPane):
         unregister_listener(self._safe_append)
         super().destroy()
 
-''' # defunct in favor of .launcher
-def start_blindwindow(
-    port: int | None = None,
-    pipe_name: str | None = None,
-) -> None:
-    """Launch BlindWindow as a standalone Tkinter app with IPC server attached."""
-    if not pyhabitat.tkinter_is_available():
-        logger.error("BlindWindow requires Tkinter, not available in this environment.")
-        return
-
-    import tkinter as tk
-
-    root = tk.Tk()
-    root.title("BlindWindow")
-
-    bw = BlindWindow(root)
-    bw.pack(fill="both", expand=True)
-
-    # Attach the external IPC listener using registration module
-    start_ipc_listener(
-        callback=bw._safe_append,
-        port=port,
-        pipe_name=pipe_name,
-    )
-
-    def _on_close():
-        stop_ipc_listener()
-        root.destroy()
-
-    root.protocol("WM_DELETE_WINDOW", _on_close)
-
-    try:
-        root.mainloop()
-    except KeyboardInterrupt:
-        logger.info("BlindWindow closed via KeyboardInterrupt.")
-'''

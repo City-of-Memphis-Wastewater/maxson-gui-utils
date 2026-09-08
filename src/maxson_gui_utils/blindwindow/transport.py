@@ -6,7 +6,7 @@ from enum import Enum
 SPOOL_PATH = Path.home() / ".blindwindow" / "spool" # append only event stream
 
 class IPCTransport(str, Enum):
-    UDS = "uds"
-    UDP = "udp"
-    NAMED_PIPE = "named-pipe"
+    #UDS = "uds"
+    #UDP = "udp"
+    #NAMED_PIPE = "named-pipe"
     SPOOL_FILE = "spool-file"
