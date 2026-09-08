@@ -18,7 +18,10 @@ _WRITE_LOCK = threading.Lock()
 
 def write_record(text: str, tag: str = "stdout") -> None:
     if not text:
+        logger.debug("[Spool] Empty text received; skipping record write.")
         return
+
+    logger.debug("[Spool] Preparing record write | tag=%s | text_len=%d | path=%s", tag, len(text), SPOOL_PATH)
 
     payload = json.dumps(
         {"text": text, "tag": tag},
@@ -37,6 +40,8 @@ def write_record(text: str, tag: str = "stdout") -> None:
         with SPOOL_PATH.open("ab") as spool:
             spool.write(frame)
             spool.flush()
+
+    logger.debug("[Spool] Wrote frame (%d bytes) to spool file.", len(frame))
 
 
 def decode_records(data: bytes) -> list[dict[str, Any]]:
@@ -60,6 +65,7 @@ def decode_records_partial(
         offset += _FRAME_HEADER.size
 
         if len(data) - offset < length:
+            logger.debug("[Spool] Partial payload buffered: need %d bytes, have %d bytes.", length, len(data) - offset)
             return records, frame_start
 
         payload = data[offset : offset + length]
