@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Any, Callable
+from pathlib import Path
+from typing import Any, Callable, Optional
 
 from .ansi import strip_ansi
 from .spool import (
-    SPOOL_PATH,
+    DEFAULT_MAX_SPOOL_BYTES,
     decode_records_partial,
+    get_spool_path,
     write_record,
 )
 
@@ -23,6 +25,7 @@ _LISTENERS: list[Callable[[str, str], None]] = []
 
 # Signals the spool listener thread to stop.
 _STOP_EVENT = threading.Event()
+
 
 class suppress_stream_wrapper_dispatch:
     """
@@ -71,6 +74,7 @@ def unregister_listener(callback: Callable[[str, str], None]) -> None:
 def dispatch_write(
     text: str,
     tag: str = "stdout",
+    spool_path: Optional[Path | str] = None,
 ) -> None:
     """
     Dispatch output to the BlindWindow spool.
@@ -88,21 +92,26 @@ def dispatch_write(
         logger.debug("[Dispatch] Text empty after strip_ansi; suppressing dispatch.")
         return
 
+    active_path = Path(spool_path) if spool_path else get_spool_path()
+
     # Canonical cross-process transport.
-    logger.debug("[Dispatch] Writing record to spool file.")
-    write_record(clean_text, tag)
+    logger.debug("[Dispatch] Writing record to spool file at %s", active_path)
+    write_record(clean_text, tag=tag, spool_path=active_path)
 
     # Notify listeners in this process as an additional convenience.
-    for listener in list(_LISTENERS):
+    if _LISTENERS:
         logger.debug("[Dispatch] Notifying %d in-process listener(s).", len(_LISTENERS))
-        try:
-            listener(clean_text, tag)
-        except Exception:
-            logger.exception("In-process listener dispatch failed")
+        for listener in list(_LISTENERS):
+            try:
+                listener(clean_text, tag)
+            except Exception:
+                logger.exception("In-process listener dispatch failed")
 
 
 def start_spool_listener(
     callback: Callable[[str, str], None],
+    spool_path: Optional[Path | str] = None,
+    max_spool_bytes: int = DEFAULT_MAX_SPOOL_BYTES,
 ) -> threading.Thread:
     """
     Start a background thread that tails the BlindWindow spool.
@@ -110,11 +119,13 @@ def start_spool_listener(
     Returns the listener thread so the caller can retain it if desired.
     """
     _STOP_EVENT.clear()
-    logger.info("[SpoolListener] Starting background spool listener thread...")
+    target_path = Path(spool_path) if spool_path else get_spool_path()
+
+    logger.info("[SpoolListener] Starting background spool listener thread on target: %s", target_path)
 
     thread = threading.Thread(
         target=_listen_spool,
-        args=(callback,),
+        args=(callback, target_path, max_spool_bytes),
         daemon=True,
         name="BlindWindow-Spool-Listener",
     )
@@ -125,19 +136,32 @@ def start_spool_listener(
 
 def _listen_spool(
     callback: Callable[[str, str], None],
+    spool_path: Path,
+    max_spool_bytes: int,
 ) -> None:
     """Tail the append-only BlindWindow spool."""
     offset = 0
     pending = b""
-    logger.debug("[SpoolListener] Tailing started on spool path: %s", SPOOL_PATH)
+    warned = False
+    logger.debug("[SpoolListener] Tailing started on spool path: %s", spool_path)
 
     while not _STOP_EVENT.is_set():
         try:
-            if not SPOOL_PATH.exists():
+            if not spool_path.exists():
                 _STOP_EVENT.wait(0.1)
                 continue
 
-            with SPOOL_PATH.open("rb") as spool:
+            file_size = spool_path.stat().st_size
+            if file_size > max_spool_bytes and not warned:
+                warned = True
+                msg = (
+                    f"\n[WARNING] Spool file size ({file_size / (1024*1024):.2f} MB) "
+                    f"has exceeded threshold ({max_spool_bytes / (1024*1024):.2f} MB).\n"
+                )
+                logger.warning("[SpoolListener] %s", msg.strip())
+                callback(msg, "stderr")
+
+            with spool_path.open("rb") as spool:
                 spool.seek(offset)
                 chunk = spool.read()
 
@@ -152,7 +176,7 @@ def _listen_spool(
 
                 for record in records:
                     callback(
-                        record["text"],
+                        record.get("text", ""),
                         record.get("tag", "stdout"),
                     )
 
@@ -168,6 +192,7 @@ def _listen_spool(
             _STOP_EVENT.wait(0.5)
 
     logger.info("[SpoolListener] Spool listener thread stopping.")
+
 
 def stop_spool_listener() -> None:
     """Request that the spool listener stop."""
