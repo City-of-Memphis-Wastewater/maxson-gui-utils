@@ -143,25 +143,6 @@ def gui_command(
     from .gui import start_gui
     start_gui(time_auto_close = assured_auto_close_value)
 
-@app.command(name="placeholder")
-def placeholder(
-    path: Path = Path("path"),
-):
-    """Placeholder."""
-    console_stderr.print(f"{path=}")
-
-@app.command(name="blindwindow_defunct")
-def blindwindow_command_defunct() -> None:
-    """
-    Launch BlindWindow to capture stdout/stderr in a GUI window.
-    """
-    if not pyhabitat.tkinter_is_available():
-        logger.error("BlindWindow requires Tkinter, not available in this environment.")
-        return
-    from .blindwindow.blindwindow import start_blindwindow
-    start_blindwindow()
-
-
 @app.command(name="blindwindow")
 def blindwindow_cmd(
     title: str = typer.Option("BlindWindow Output", "--title", "-t", help="Custom window title bar text."),
