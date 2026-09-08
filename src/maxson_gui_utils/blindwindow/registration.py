@@ -5,15 +5,12 @@ from __future__ import annotations
 import json
 import logging
 import os
-import socket
-import sys
-import tempfile
 import threading
 from pathlib import Path
 from typing import Any, Callable, List, Optional
 
 from .ansi import strip_ansi
-from .spool import write_record as write_record_to_spool
+from .spool import SPOOL_PATH, decode_records, write_record as write_record_to_spool
 from .transport import IPCTransport
 
 logger = logging.getLogger(__name__)
@@ -102,6 +99,61 @@ def dispatch_write(
         write_record_to_spool(clean_text, tag)
 
 # ---- Server / Listener Background Services ----
+
+
+def start_spool_listener(
+    callback: Callable[[str, str], None],
+) -> None:
+    """Start a background thread that tails the BlindWindow spool."""
+
+    thread = threading.Thread(
+        target=_listen_spool,
+        args=(callback,),
+        daemon=True,
+        name="BlindWindow-Spool-Listener",
+    )
+    thread.start()
+    _IPC_SERVER_THREADS.append(thread)
+
+
+def _listen_spool(
+    callback: Callable[[str, str], None],
+) -> None:
+    """Tail the append-only BlindWindow spool."""
+
+    offset = 0
+    pending = b""
+
+    while not _IPC_STOP_EVENT.is_set():
+        try:
+            if not SPOOL_PATH.exists():
+                _IPC_STOP_EVENT.wait(0.1)
+                continue
+
+            with SPOOL_PATH.open("rb") as spool:
+                spool.seek(offset)
+                chunk = spool.read()
+
+            if chunk:
+                pending += chunk
+
+                records, consumed = decode_records_partial(pending)
+
+                for record in records:
+                    callback(
+                        record["text"],
+                        record.get("tag", "stdout"),
+                    )
+
+                if consumed:
+                    pending = pending[consumed:]
+                    offset += consumed
+
+            _IPC_STOP_EVENT.wait(0.1)
+
+        except Exception:
+            logger.exception("BlindWindow spool listener failed")
+            _IPC_STOP_EVENT.wait(0.5)
 
 def start_ipc_listener(
     callback: Callable[[str, str], None],

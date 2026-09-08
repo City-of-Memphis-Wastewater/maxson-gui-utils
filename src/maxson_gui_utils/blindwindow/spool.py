@@ -20,6 +20,20 @@ _FRAME_HEADER = struct.Struct("!I")
 _WRITE_LOCK = threading.Lock()
 
 
+def write_record(text: str, tag: str = "stdout") -> None:
+    SPOOL_DIR.mkdir(parents=True, exist_ok=True)
+
+    record = {
+        "text": text,
+        "tag": tag,
+    }
+
+    with _WRITE_LOCK:
+        with SPOOL_PATH.open("a", encoding="utf-8") as spool:
+            spool.write(json.dumps(record, ensure_ascii=False))
+            spool.write("\n")
+            spool.flush()
+
 def encode_record(text: str, tag: str = "stdout") -> bytes:
     """Serialize one output event into a length-prefixed JSON frame."""
 
