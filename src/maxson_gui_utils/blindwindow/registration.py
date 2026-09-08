@@ -2,40 +2,35 @@
 # src/maxson_gui_utils/blindwindow/registration.py
 from __future__ import annotations
 
-import json
 import logging
-import os
 import threading
-from pathlib import Path
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable
 
 from .ansi import strip_ansi
-from .spool import SPOOL_PATH, decode_records, write_record as write_record_to_spool
-from .transport import IPCTransport
+from .spool import (
+    SPOOL_PATH,
+    decode_records_partial,
+    write_record,
+)
 
 logger = logging.getLogger(__name__)
 
+# Prevent duplicate dispatch when Console has already dispatched output.
 _DISPATCH_GUARD = threading.local()
 
-# Active in-process listeners: callback(text: str, tag: str)
-_LISTENERS: List[Callable[[str, str], None]] = []
-_IPC_SERVER_THREADS: List[threading.Thread] = []
+# In-process listeners, e.g. BlindWindow text panes.
+_LISTENERS: list[Callable[[str, str], None]] = []
 
-# Shutdown flag and socket registry for graceful IPC cleanup
-_IPC_STOP_EVENT = threading.Event()
-_ACTIVE_SOCKETS: List[socket.socket] = []
-_SOCKET_LOCK = threading.Lock()
-
-# Centralized Constants
-IPC_HOST = "127.0.0.1"
-IPC_PORT = int(os.environ.get("MGUI_IPC_PORT", "9999"))
-PIPE_NAME = r"\\.\pipe\maxson_gui_utils_ipc"
+# Signals the spool listener thread to stop.
+_STOP_EVENT = threading.Event()
 
 
 class suppress_stream_wrapper_dispatch:
     """
-    Context manager to suppress SystemStreamWrapper dispatch when Console already dispatched.
-    Behavioral scope control block; PEP8 PascalCase intentionally avoided for context manager naming.
+    Suppress SystemStreamWrapper dispatch within this context.
+
+    This is used when Console has already dispatched the output and the
+    stream wrapper should not dispatch it a second time.
     """
 
     def __enter__(self) -> suppress_stream_wrapper_dispatch:
@@ -43,68 +38,73 @@ class suppress_stream_wrapper_dispatch:
         _DISPATCH_GUARD.depth = depth + 1
         return self
 
-    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+    def __exit__(
+        self,
+        exc_type: Any,
+        exc_val: Any,
+        exc_tb: Any,
+    ) -> None:
         depth = getattr(_DISPATCH_GUARD, "depth", 1)
         _DISPATCH_GUARD.depth = max(0, depth - 1)
 
-# keep for spool?
+
 def is_dispatch_suppressed() -> bool:
-    """Returns True if stream wrapper dispatching is currently suppressed within context."""
+    """Return whether stream-wrapper dispatch is currently suppressed."""
     return getattr(_DISPATCH_GUARD, "depth", 0) > 0
 
-# keep for spool?
+
 def register_listener(callback: Callable[[str, str], None]) -> None:
-    """Registers a pane callback (e.g. TextPane.append) to receive console outputs."""
+    """Register an in-process output listener."""
     if callback not in _LISTENERS:
         _LISTENERS.append(callback)
 
-# keep for spool?
+
 def unregister_listener(callback: Callable[[str, str], None]) -> None:
-    """Removes a pane callback from global listeners."""
+    """Unregister an in-process output listener."""
     if callback in _LISTENERS:
         _LISTENERS.remove(callback)
 
 
-# ---- Runtime Path Generators & Inter-Process Communication Helpers ----
-
-# replaced
 def dispatch_write(
     text: str,
     tag: str = "stdout",
-    *,
-    transport: IPCTransport = IPCTransport.SPOOL_FILE,
 ) -> None:
-    """Dispatch output to the local BlindWindow spool."""
+    """
+    Dispatch output to the BlindWindow spool.
 
+    The spool is the canonical cross-process transport. Every process may
+    append records to the same spool.
+
+    Registered in-process listeners are notified in addition to the spool
+    append; they do not replace it.
+    """
     clean_text = strip_ansi(text)
 
     if not clean_text:
         return
 
-    # Same-process listeners remain useful.
-    if _LISTENERS:
-        for listener in list(_LISTENERS):
-            try:
-                listener(clean_text, tag)
-            except Exception as e:
-                logger.error(
-                    "In-process listener dispatch failed: %s",
-                    e,
-                    exc_info=True,
-                )
-        return
+    # Canonical cross-process transport.
+    write_record(clean_text, tag)
 
-    # Cross-process transport: spool only.
-    if transport is IPCTransport.SPOOL_FILE:
-        write_record_to_spool(clean_text, tag)
-
-# ---- Server / Listener Background Services ----
+    # Notify listeners in this process as an additional convenience.
+    for listener in list(_LISTENERS):
+        try:
+            listener(clean_text, tag)
+        except Exception:
+            logger.exception(
+                "In-process listener dispatch failed"
+            )
 
 
 def start_spool_listener(
     callback: Callable[[str, str], None],
-) -> None:
-    """Start a background thread that tails the BlindWindow spool."""
+) -> threading.Thread:
+    """
+    Start a background thread that tails the BlindWindow spool.
+
+    Returns the listener thread so the caller can retain it if desired.
+    """
+    _STOP_EVENT.clear()
 
     thread = threading.Thread(
         target=_listen_spool,
@@ -113,21 +113,21 @@ def start_spool_listener(
         name="BlindWindow-Spool-Listener",
     )
     thread.start()
-    _IPC_SERVER_THREADS.append(thread)
+
+    return thread
 
 
 def _listen_spool(
     callback: Callable[[str, str], None],
 ) -> None:
     """Tail the append-only BlindWindow spool."""
-
     offset = 0
     pending = b""
 
-    while not _IPC_STOP_EVENT.is_set():
+    while not _STOP_EVENT.is_set():
         try:
             if not SPOOL_PATH.exists():
-                _IPC_STOP_EVENT.wait(0.1)
+                _STOP_EVENT.wait(0.1)
                 continue
 
             with SPOOL_PATH.open("rb") as spool:
@@ -149,38 +149,15 @@ def _listen_spool(
                     pending = pending[consumed:]
                     offset += consumed
 
-            _IPC_STOP_EVENT.wait(0.1)
+            _STOP_EVENT.wait(0.1)
 
         except Exception:
-            logger.exception("BlindWindow spool listener failed")
-            _IPC_STOP_EVENT.wait(0.5)
+            logger.exception(
+                "BlindWindow spool listener failed"
+            )
+            _STOP_EVENT.wait(0.5)
 
-def start_ipc_listener(
-    callback: Callable[[str, str], None],
-    transport: IPCTransport = IPCTransport.SPOOL_FILE,
-) -> None:
-    """Start the selected BlindWindow transport listener."""
 
-    _IPC_STOP_EVENT.clear()
-
-    if transport is IPCTransport.SPOOL_FILE:
-        start_spool_listener(callback)
-        return
-
-    raise ValueError(
-        f"Unsupported transport: {transport}"
-    )
-
-def stop_ipc_listener() -> None:
-    """Stop the BlindWindow spool listener."""
-
-    _IPC_STOP_EVENT.set()
-
-# in
-def _listen_spool(
-    callback: Callable[[str, str], None],
-    port: int,
-    ready: threading.Event,
-    error: list[BaseException],
-) -> None:
-    pass
+def stop_spool_listener() -> None:
+    """Request that the spool listener stop."""
+    _STOP_EVENT.set()

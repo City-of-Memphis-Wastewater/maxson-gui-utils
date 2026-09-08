@@ -1,4 +1,3 @@
-# src/maxson_gui_utils/blindwindow/spool.py
 from __future__ import annotations
 
 import json
@@ -13,37 +12,16 @@ logger = logging.getLogger(__name__)
 SPOOL_DIR = Path.home() / ".blindwindow"
 SPOOL_PATH = SPOOL_DIR / "spool"
 
-# 4-byte unsigned big-endian length prefix.
 _FRAME_HEADER = struct.Struct("!I")
-
-# Protects concurrent writes from threads in the same process.
 _WRITE_LOCK = threading.Lock()
 
 
 def write_record(text: str, tag: str = "stdout") -> None:
-    SPOOL_DIR.mkdir(parents=True, exist_ok=True)
-
-    record = {
-        "text": text,
-        "tag": tag,
-    }
-
-    with _WRITE_LOCK:
-        with SPOOL_PATH.open("a", encoding="utf-8") as spool:
-            spool.write(json.dumps(record, ensure_ascii=False))
-            spool.write("\n")
-            spool.flush()
-
-def encode_record(text: str, tag: str = "stdout") -> bytes:
-    """Serialize one output event into a length-prefixed JSON frame."""
-
-    record = {
-        "text": text,
-        "tag": tag,
-    }
+    if not text:
+        return
 
     payload = json.dumps(
-        record,
+        {"text": text, "tag": tag},
         ensure_ascii=False,
         separators=(",", ":"),
     ).encode("utf-8")
@@ -51,16 +29,7 @@ def encode_record(text: str, tag: str = "stdout") -> bytes:
     if len(payload) > 0xFFFFFFFF:
         raise ValueError("Spool record is too large.")
 
-    return _FRAME_HEADER.pack(len(payload)) + payload
-
-
-def write_record(text: str, tag: str = "stdout") -> None:
-    """Append one output event to the BlindWindow spool."""
-
-    if not text:
-        return
-
-    frame = encode_record(text, tag)
+    frame = _FRAME_HEADER.pack(len(payload)) + payload
 
     SPOOL_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -71,25 +40,27 @@ def write_record(text: str, tag: str = "stdout") -> None:
 
 
 def decode_records(data: bytes) -> list[dict[str, Any]]:
-    """Decode complete frames from bytes.
+    records, consumed = decode_records_partial(data)
 
-    Raises ValueError if a frame is incomplete or malformed.
-    """
+    if consumed != len(data):
+        raise ValueError("Incomplete spool frame.")
 
+    return records
+
+
+def decode_records_partial(
+    data: bytes,
+) -> tuple[list[dict[str, Any]], int]:
     records: list[dict[str, Any]] = []
     offset = 0
 
-    while offset < len(data):
-        remaining = len(data) - offset
-
-        if remaining < _FRAME_HEADER.size:
-            raise ValueError("Incomplete spool frame header.")
-
+    while len(data) - offset >= _FRAME_HEADER.size:
         (length,) = _FRAME_HEADER.unpack_from(data, offset)
+        frame_start = offset
         offset += _FRAME_HEADER.size
 
         if len(data) - offset < length:
-            raise ValueError("Incomplete spool frame payload.")
+            return records, frame_start
 
         payload = data[offset : offset + length]
         offset += length
@@ -104,4 +75,4 @@ def decode_records(data: bytes) -> list[dict[str, Any]]:
 
         records.append(record)
 
-    return records
+    return records, offset
