@@ -6,9 +6,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-### Internal
-- MacOS blindwindow support is failing. But the primary purpose is MSIX.
-- slice out to /blindwindow repo.
+## [0.1.17] - 09-08-2026
+### Changed:
+- Remove UDS, UDP, named-pipe and really all proper IPC machination for connecting consuming apps to blind window messaging.
+- The only transport machination now is a JSON spool file, at ~/.blindwindow/spool
 
 ---
 
