@@ -99,12 +99,19 @@ def launch_blindwindow(
 
     logger.info("BlindWindow interface initialized successfully (Spool: %s).", target_spool)
 
+    def _heartbeat():
+        logger.debug("[Heartbeat] Tkinter mainloop tick")
+        root.after(3000, _heartbeat)
+    root.after(3000, _heartbeat)
+
     try:
         root.mainloop()
     except KeyboardInterrupt:
         logger.info("BlindWindow closed via KeyboardInterrupt.")
     finally:
         stop_spool_listener()
+
+
 
 
 if __name__ == "__main__":

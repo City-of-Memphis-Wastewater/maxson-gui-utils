@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import sys
 import pyhabitat
+import threading
 
 from maxson_gui_utils.textpane import TextPane
 from .ansi import strip_ansi
@@ -46,7 +47,7 @@ class BlindWindow(TextPane):
         logger.debug("[BlindWindow.__init__] Registering self._safe_append in-process listener...")
         register_listener(self._safe_append)
 
-    def _safe_append(self, text: str, tag: str = "stdout") -> None:
+    def _safe_append_defunct(self, text: str, tag: str = "stdout") -> None:
         """Thread-safe append helper for Tkinter mainloop with guaranteed ANSI cleanup."""
         clean_text = strip_ansi(text)
         if not clean_text:
@@ -56,8 +57,21 @@ class BlindWindow(TextPane):
             #self.after_idle(self.append, clean_text, tag)
             self.after_idle(self._logged_append, clean_text, tag)
         except Exception as err:
-            logger.exception("[BlindWindow._safe_append] Failed to schedule after_idle append: %s", err)
 
+           logger.exception("[BlindWindow._safe_append] Failed to schedule after_idle append: %s", err)
+
+    def _safe_append(self, text: str, tag: str = "stdout") -> None:
+        clean_text = strip_ansi(text)
+        if not clean_text:
+            return
+        logger.debug(
+            "[BlindWindow._safe_append] Thread=%s (%s) | text=%r",
+            threading.current_thread().name,
+            threading.get_ident(),
+            clean_text[:30],
+        )
+        self.after_idle(self._logged_append, clean_text, tag)
+        
     def _logged_append(self, text: str, tag: str = "stdout") -> None:
         """Wrapper around TextPane.append to verify Tkinter mainloop thread execution."""
         logger.debug("[BlindWindow._logged_append] Executing append in Tkinter mainloop | tag=%s | text_len=%d", tag, len(text))
