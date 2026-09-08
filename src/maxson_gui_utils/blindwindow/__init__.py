@@ -11,6 +11,7 @@ __all__ = [
     "TeeStream",
     "GuiStream",
     "install_stream_wrappers",
+    "get_spool_path",
 ]
 
 
@@ -35,6 +36,10 @@ def __getattr__(name: str):
         from .streams import install_stream_wrappers
         return install_stream_wrappers
 
+    if name == "get_spool_path":
+        from .spool import get_spool_path
+        return get_spool_path
+    
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
