@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [0.1.18] - 09-15-2026
+### Changed:
+- 'from importlib.abc import Traversable' -> 'from importlib.resources.abc import Traversable', for retroactive and ongoing capability with Python 3.9-3.14 and beyond.
+
+---
+
 ## [0.1.17] - 09-08-2026
 ### Changed:
 - Remove UDS, UDP, named-pipe and really all proper IPC machination for connecting consuming apps to blind window messaging.

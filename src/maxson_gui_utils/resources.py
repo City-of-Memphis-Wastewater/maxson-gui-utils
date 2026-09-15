@@ -3,10 +3,10 @@ from __future__ import annotations
 
 from pathlib import Path
 from importlib.resources import files
-from importlib.abc import Traversable
 from collections.abc import Iterator
 from contextlib import contextmanager
 from importlib.resources import as_file
+from importlib.resources.abc import Traversable
 
 from .context import IMPORT_NAME
 
