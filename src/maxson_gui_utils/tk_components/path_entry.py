@@ -1,6 +1,6 @@
 from __future__ import annotations
 from tkinter import filedialog, ttk, messagebox
-def create_path_entry(control_frame:ttk.Frame, path_name_str:str = "Path")->None:
+def create_path_entry(control_frame:ttk.Frame, path_name_str:str = "Input Path")->None:
     ## --- Control Frame (Top) ---
     #control_frame = ttk.Frame(self.root, padding=(4, 2, 4, 2))
     #control_frame.pack(fill='x', pady=(2, 2))

@@ -10,9 +10,10 @@ from ._version import __version__
 __all__ = [
     "__version__",
     "__gui_easteregg_enabled__",
-    "Console",
-    "TeeStream",
-    "GuiStream",
+    "tk_components",
+    "tk_utils",
+    "resources"
+
 ]
 
 
@@ -25,19 +26,18 @@ def _check_easteregg_env() -> bool:
 # 2. Fully dynamic attribute routing
 def __getattr__(name: str):
 
-    if name == "Console":
-        from .blindwindow.console import Console
-        return Console
+    if name == "tk_components":
+        from . import tk_components
+        return tk_components
 
-    if name == "GuiStream":
-        from .blindwindow.streams import GuiStream
-        return GuiStream
+    if name == "tk_utils":
+        from . import tk_utils
+        return tk_utils
 
-    if name == "TeeStream":
-        from .blindwindow.streams import TeeStream
-        return TeeStream
+    if name == "resources":
+        from . import resources
+        return resources
 
-        
     # Dynamic boolean evaluation for the breadcrumb attribute
     if name == "__gui_easteregg_enabled__":
         return _check_easteregg_env()
