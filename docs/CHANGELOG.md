@@ -4,7 +4,11 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-----
+---
+
+## [0.1.24] - 09-20-2026
+### Added:
+- tk_utils.check_frame_geometry()
 
 ---
 
