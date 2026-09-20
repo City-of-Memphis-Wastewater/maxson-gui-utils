@@ -26,17 +26,17 @@ def _check_easteregg_env() -> bool:
 # 2. Fully dynamic attribute routing
 def __getattr__(name: str):
 
-    if name == "tk_components":
-        from . import tk_components
-        return tk_components
+    #if name == "tk_components":
+    #    from . import tk_components
+    #    return tk_components
 
-    if name == "tk_utils":
-        from . import tk_utils
-        return tk_utils
+    #if name == "tk_utils":
+    #    from . import tk_utils
+    #    return tk_utils
 
-    if name == "resources":
-        from . import resources
-        return resources
+    #if name == "resources":
+    #    from . import resources
+    #    return resources
 
     # Dynamic boolean evaluation for the breadcrumb attribute
     if name == "__gui_easteregg_enabled__":
