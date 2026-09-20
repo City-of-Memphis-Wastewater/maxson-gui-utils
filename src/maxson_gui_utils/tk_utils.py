@@ -1,6 +1,7 @@
 # src/maxson_gui_utils/tk_utils.py
 from __future__ import annotations
 import tkinter as tk
+from tkinter import ttk
 import re
 import platform
 import logging
@@ -206,4 +207,37 @@ def set_tk_iconphoto(
     else:
         logger.debug(
             f"Neither custom iconphoto ({filename}) nor default MGU iconphoto found."
+        )
+
+def check_frame_geometry(frame: ttk.Frame, name: str = "frame") -> None:
+    """Debug-check whether a frame is clipping its grid contents."""
+    frame.update_idletasks()
+
+    actual_height = frame.winfo_height()
+    grid_x, grid_y, grid_width, grid_height = frame.grid_bbox()
+
+    grid_bottom = grid_y + grid_height
+    clipped = grid_bottom > actual_height
+
+    logger.debug(
+        f"{name}: "
+        f"actual_height={actual_height}, "
+        f"grid_bbox=({grid_x}, {grid_y}, {grid_width}, {grid_height}), "
+        f"grid_bottom={grid_bottom}"
+    )
+
+    if clipped:
+        logger.warning(
+            f"{name} is vertically clipped: "
+            f"actual_height={actual_height}, "
+            f"grid_bottom={grid_bottom}, "
+            f"missing={grid_bottom - actual_height}px"
+        )
+
+    if clipped:
+        logger.warning(
+            f"{name} is being vertically clipped by its parent: "
+            f"frame height={actual_height}px, "
+            f"grid requires through y={grid_bottom}px "
+            f"({grid_bottom - actual_height}px clipped)"
         )

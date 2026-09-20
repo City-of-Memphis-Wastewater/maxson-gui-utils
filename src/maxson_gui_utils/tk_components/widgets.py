@@ -1,3 +1,4 @@
+# src/maxson_gui_utils/tk_components/widgets.py
 from __future__ import annotations
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
@@ -17,12 +18,6 @@ def create_path_entry(
     # === Row : File Selection ===
     file_selection_frame = ttk.Frame(control_frame)
 
-    # Dynamically calculate the next available row index
-    #_, next_row = control_frame.grid_size()
-
-    # risk of speficity, it should just be 'next avaiable row, expand by one'
-    #file_selection_frame.grid(row=next_row, column=0, columnspan=3, padx=0, pady=(2, 4), sticky='ew')
-
     ttk.Label(file_selection_frame, text=f"{path_name_str}:").pack(side=tk.LEFT, padx=(0, 3))
     entry = ttk.Entry(file_selection_frame, textvariable=path_var)
     entry.pack(side=tk.LEFT, fill='x', expand=True, padx=3)
@@ -41,7 +36,6 @@ def copy_entry_filepath(path_var: tk.StringVar,root:tk.Tk):
             messagebox.showerror("Copy Error", f"Clipboard access blocked: {e}")
     else:
         messagebox.showwarning("Copy Failed", "Path field is empty.")
-
 
 def browse_entry_filepath(path_var:tk.StringVar):
     if path_var.get():
