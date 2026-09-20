@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [0.1.21] - 09-20-2026
+### Fixed:
+- Modularize path entry widget to use root:tk.Tk
+
+---
+
 ## [0.1.20] - 09-20-2026
 ### Fixed:
 - Ensure that tkinter is importe as 'tk' in src/maxson_gui_utils/tk_components/widgets.py
