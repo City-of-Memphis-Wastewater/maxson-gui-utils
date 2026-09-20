@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [0.1.19] - 09-20-2026
+### Added:
+- src/maxson_gui_utils/tk_components/widgets.py, with __init__ exposure.
+
+---
+
 ## [0.1.18] - 09-15-2026
 ### Changed:
 - 'from importlib.abc import Traversable' -> 'from importlib.resources.abc import Traversable', for retroactive and ongoing capability with Python 3.9-3.14 and beyond.
