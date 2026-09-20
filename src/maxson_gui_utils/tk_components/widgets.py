@@ -1,4 +1,5 @@
 from __future__ import annotations
+import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 def create_path_entry(control_frame:ttk.Frame, path_name_str:str = "Input Path")->None:
     ## --- Control Frame (Top) ---
