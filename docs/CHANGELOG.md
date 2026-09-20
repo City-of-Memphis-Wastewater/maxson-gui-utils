@@ -4,6 +4,15 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+----
+
+---
+
+## [0.1.22] - 09-20-2026
+### Fixed:
+- Modularize path entry widget, fix typos
+- Auto next row
+
 ---
 
 ## [0.1.21] - 09-20-2026

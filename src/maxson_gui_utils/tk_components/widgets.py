@@ -16,8 +16,11 @@ def create_path_entry(root: tk.Tk,
     # === Row : File Selection ===
     file_selection_frame = ttk.Frame(control_frame)
 
+    # Dynamically calculate the next available row index
+    _, next_row = control_frame.grid_size()
+
     # risk of speficity, it should just be 'next avaiable row, expand by one'
-    file_selection_frame.grid(row=0, column=0, columnspan=3, padx=0, pady=(2, 4), sticky='ew')
+    file_selection_frame.grid(row=next_row, column=0, columnspan=3, padx=0, pady=(2, 4), sticky='ew')
 
     ttk.Label(file_selection_frame, text=f"{path_name_str}:").pack(side=tk.LEFT, padx=(0, 3))
     entry = ttk.Entry(file_selection_frame, textvariable=path_var)
