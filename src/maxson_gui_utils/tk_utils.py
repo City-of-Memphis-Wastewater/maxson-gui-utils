@@ -209,7 +209,7 @@ def set_tk_iconphoto(
             f"Neither custom iconphoto ({filename}) nor default MGU iconphoto found."
         )
 
-def check_frame_geometry(frame: ttk.Frame, name: str = "frame") -> None:
+def check_frame_geometry(frame: ttk.Frame, name: str = "frame") -> tuple[int,int]:
     """Debug-check whether a frame is clipping its grid contents."""
     frame.update_idletasks()
 
@@ -228,16 +228,10 @@ def check_frame_geometry(frame: ttk.Frame, name: str = "frame") -> None:
 
     if clipped:
         logger.warning(
-            f"{name} is vertically clipped: "
-            f"actual_height={actual_height}, "
-            f"grid_bottom={grid_bottom}, "
-            f"missing={grid_bottom - actual_height}px"
-        )
-
-    if clipped:
-        logger.warning(
-            f"{name} is being vertically clipped by its parent: "
+            f"{name} is vertically clipped by its parent: "
             f"frame height={actual_height}px, "
-            f"grid requires through y={grid_bottom}px "
+            f"grid requires y={grid_bottom}px "
             f"({grid_bottom - actual_height}px clipped)"
         )
+
+    return actual_height, grid_bottom
