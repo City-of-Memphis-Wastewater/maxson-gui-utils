@@ -11,22 +11,23 @@ def create_path_entry(root: tk.Tk,
     control_frame: ttk.Frame, 
     path_var: tk.StringVar,
     path_name_str:str = "Input Path"
-)->None:
+)->ttk.Frame:
 
     # === Row : File Selection ===
     file_selection_frame = ttk.Frame(control_frame)
 
     # Dynamically calculate the next available row index
-    _, next_row = control_frame.grid_size()
+    #_, next_row = control_frame.grid_size()
 
     # risk of speficity, it should just be 'next avaiable row, expand by one'
-    file_selection_frame.grid(row=next_row, column=0, columnspan=3, padx=0, pady=(2, 4), sticky='ew')
+    #file_selection_frame.grid(row=next_row, column=0, columnspan=3, padx=0, pady=(2, 4), sticky='ew')
 
     ttk.Label(file_selection_frame, text=f"{path_name_str}:").pack(side=tk.LEFT, padx=(0, 3))
     entry = ttk.Entry(file_selection_frame, textvariable=path_var)
     entry.pack(side=tk.LEFT, fill='x', expand=True, padx=3)
     ttk.Button(file_selection_frame, text="Browse...", command=lambda: browse_entry_filepath(path_var), width=10).pack(side=tk.LEFT, padx=(3, 3))
     ttk.Button(file_selection_frame, text="Copy Path", command=lambda: copy_entry_filepath(path_var,root), width=10).pack(side=tk.LEFT, padx=(0, 0))
+    return file_selection_frame
 
 def copy_entry_filepath(path_var: tk.StringVar,root:tk.Tk):
     path_to_copy = path_var.get()
