@@ -2,7 +2,7 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 from pathlib import Path
-
+import os
 import pyhabitat
 
 #from .functions import browse_entry_filepath, copy_entry_filepath
@@ -25,7 +25,7 @@ def create_path_entry(root: tk.Tk,
     ttk.Button(file_selection_frame, text="Browse...", command=lambda: browse_entry_filepath(path_var), width=10).pack(side=tk.LEFT, padx=(3, 3))
     ttk.Button(file_selection_frame, text="Copy Path", command=lambda: copy_entry_filepath(path_var,root), width=10).pack(side=tk.LEFT, padx=(0, 0))
 
-def copy_entry_filpath(path_var: tk.StringVar,root:tk.Tk):
+def copy_entry_filepath(path_var: tk.StringVar,root:tk.Tk):
     path_to_copy = path_var.get()
     if path_to_copy:
         try:
@@ -39,8 +39,8 @@ def copy_entry_filpath(path_var: tk.StringVar,root:tk.Tk):
 
 
 def browse_entry_filepath(path_var:tk.StringVar):
-    if self.path_var.get():
-        initialdir = str(Path(pdf_var.get()).parent)
+    if path_var.get():
+        initialdir = str(Path(path_var.get()).parent)
     elif pyhabitat.is_msix():
         initialdir = str(Path.home())
     else:
