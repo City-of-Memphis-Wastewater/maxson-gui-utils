@@ -7,7 +7,8 @@ import pyhabitat
 
 #from .functions import browse_entry_filepath, copy_entry_filepath
 
-def create_path_entry(root: tk.Tk,
+def create_path_entry(
+    root: tk.Tk,
     control_frame: ttk.Frame, 
     path_var: tk.StringVar,
     path_name_str:str = "Input Path"
