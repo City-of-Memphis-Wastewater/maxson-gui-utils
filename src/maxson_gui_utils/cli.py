@@ -143,30 +143,6 @@ def gui_command(
     from .gui import start_gui
     start_gui(time_auto_close = assured_auto_close_value)
 
-@app.command(name="blindwindow")
-def blindwindow_cmd(
-    title: str = typer.Option("BlindWindow Output", "--title", "-t", help="Custom window title bar text."),
-    #port: Optional[int] = typer.Option(None, "--port", help="Port for UDP stream listeners."),
-    #pipe_name: Optional[str] = typer.Option(None, "--pipe-name", help="Custom IPC Named Pipe or UDS path."),
-    always_on_top: bool = typer.Option(False, "--always-on-top", "--ontop", help="Keep window floating above other windows."),
-    autoscroll: bool = typer.Option(True, "--autoscroll/--no-autoscroll", help="Automatically scroll to the newest stream input."),
-) -> None:
-    """
-    Launch BlindWindow to capture stdout/stderr in a GUI window.
-    """
-    if not pyhabitat.tkinter_is_available():
-        logger.error("BlindWindow requires Tkinter, not available in this environment.")
-        return
-    from .blindwindow.launcher import launch_blindwindow
-
-    launch_blindwindow(
-        title=title,
-        #port=port,
-        #pipe_name=pipe_name,
-        always_on_top=always_on_top,
-        autoscroll=autoscroll,
-    )
-
 @app.command(name="conweb")
 def _launch_configured_website(
     path: Path | None = typer.Option(None, "--path", "-p", help="Path to config file, a la dworshak-config."),
