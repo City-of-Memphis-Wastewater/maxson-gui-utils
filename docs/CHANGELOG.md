@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [0.1.25] - 09-20-2026
+### Fixed:
+- Give splash a generic loading message.
+
+---
+
 ## [0.1.24] - 09-20-2026
 ### Added:
 - tk_utils.check_frame_geometry()
